@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+	<link rel="shortcut icon" href="../resbox/mobilise.png"/>
+	<title>Mobilise - Tracker</title>
+
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="../resbox/materialize.min.css">
+	<link rel="stylesheet" href="../resbox/main.css">
+	<link rel="stylesheet" type="text/css" href="../resbox/style.css">
+	<link rel="stylesheet" type="text/css" href="../resbox/trackerStyle.css">
+</head>
+<body>
+
+	<header class="ss-header">
+		<div class="menu-container" onclick="toggleMenu(this)">
+			<div class="bar1"></div>
+			<div class="bar2"></div>
+			<div class="bar3"></div>
+		</div>
+		<img src="../resbox/logo0.png"/>
+	</header>
+	<div class="main">
+		
+		<div class="tracker-map-wrapper">
+			<div class="tracker-map">
+				<div id="mapCanvas" class="loadMap">
+				</div>
+			</div>
+		</div>
+		<div id="tracker-wrap" class="tracker-options-wrapper wrapSS">
+			<!-- <header class="header">
+				<img src="../resbox/logo0.png"/>
+			</header> -->
+
+			<div class="row title-bar z-depth-2 text-transform-capitalize">
+				tour des fjords
+			</div>
+			
+			<div class="row">
+				<div class="gridTabs-navBar">
+					<ul class="tabs tabs-fixed-width gridTabs">
+						<li class="tab gridTab"><a class="active clear-padding" href="#tracker-op-1">map</a></li>
+						<li class="tab gridTab"><a class="clear-padding" href="#tracker-op-2">track</a></li>
+						<li class="tab gridTab"><a class="clear-padding" href="#tracker-op-3">rostering</a></li>
+						<li class="tab gridTab"><a class="clear-padding" href="#tracker-op-4">signsplan</a></li>
+						<li class="tab gridTab"><a class="clear-padding" href="#tracker-op-5">bannerplan</a></li>
+					</ul>
+				</div>
+
+				<div class="tabs-content-wrapper">
+					<div id="tracker-op-1" class="col s12">
+						<div class="white__box z-depth-2">
+							<div class="header font-18x grey-text bottom-margin-20x">Availebal Maps<i class="material-icons small green-text put-pointer">add_box</i></div>
+							<div class="switch__container">
+								<span class="text__wrap">Tour des Fjords</span>
+								<span class="switch">
+									<label>
+										<input type="checkbox">
+										<span class="lever"></span>
+									</label>
+								</span>
+							</div>
+						</div>
+						<div class="white__box z-depth-2">
+							<div class="header font-18x grey-text bottom-margin-20x">Availebal Layers<i class="material-icons small green-text put-pointer">add_box</i></div>
+							<div class="switch__container">
+								<span class="text__wrap">Personell</span>
+								<span class="switch">
+									<label>
+										<input type="checkbox">
+										<span class="lever"></span>
+									</label>
+								</span>
+							</div>
+							<div class="switch__container">
+								<span class="text__wrap">Signsplan</span>
+								<span class="switch">
+									<label>
+										<input type="checkbox">
+										<span class="lever"></span>
+									</label>
+								</span>
+							</div>
+							<div class="switch__container">
+								<span class="text__wrap">Bannerplan</span>
+								<span class="switch">
+									<label>
+										<input type="checkbox">
+										<span class="lever"></span>
+									</label>
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div id="tracker-op-2" class="col s12" style="display:none">
+						<div class="white__box z-depth-2">
+							<div class="add-checkpoint-wrapper">
+								<div class="add-checkpoint-title grey-text">Add a new checkpoint</div>
+								<div class="dummy-line"></div>	
+							</div>
+						</div>
+						<div class="checkpoints-wrapper side-margin-10x">
+							<div class="checkpoints-title">
+								Checkpoints (<span>23</span>)
+							</div>
+							<div class="checkpoints-list">
+								<div class="checkpoint-box">
+									<div class="checkpoint-icon">
+										<div class="checkpoint-tag"></div>
+									</div>
+									<div class="checkpoint-info-wrapper">
+										<div class="checkpoint-name">#123</div>
+										<div class="checkpoint-coordinates">
+											145.758 - 256.453
+										</div>
+									</div>
+								</div>
+								<div class="checkpoint-box">
+									<div class="checkpoint-icon">
+										<div class="checkpoint-tag"></div>
+									</div>
+									<div class="checkpoint-info-wrapper">
+										<div class="checkpoint-name">#123</div>
+										<div class="checkpoint-coordinates">
+											145.758 - 256.453
+										</div>
+									</div>
+								</div>
+							</div>								
+						</div>
+					</div>
+
+					<div id="tracker-op-3" class="col s12" style="display:none">
+						<div class="white__box z-depth-2">
+
+						</div>
+						<div class="white__box z-depth-2">
+							<div class="filter-personnel-wrapper">
+								<div class="filter-personnel-title grey-text">Filter Personell by Category/Section/Role</div>
+								<div class="dummy-line"></div>	
+							</div>
+						</div>
+					</div>
+
+					<div id="tracker-op-4" class="col s12" style="display:none">
+						<div class="white__box z-depth-2">
+							<div class="search-signs-wrapper">
+								<div class="search-signs-title grey-text">Search for Signs:</div>
+								<div class="dummy-line"></div>	
+							</div>
+						</div>
+						<div class="tracker-signs-wrapper side-margin-10x">
+							<div class="tracker-sign">
+								<img class="tracker-sign-icon" src="../resbox/signs/sign (1).png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-sign-icon" src="../resbox/signs/sign (2).png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-sign-icon" src="../resbox/signs/sign (3).png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-sign-icon" src="../resbox/signs/sign (4).png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-sign-icon" src="../resbox/signs/sign (5).png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-sign-icon" src="../resbox/signs/sign (6).png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-sign-icon" src="../resbox/signs/sign (7).png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-sign-icon" src="../resbox/signs/sign (8).png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-sign-icon" src="../resbox/signs/sign (9).png">
+							</div>
+						</div>
+					</div>
+
+					<div id="tracker-op-5" class="col s12" style="display:none">
+						<div class="white__box z-depth-2">
+							<div class="search-banners-wrapper">
+								<div class="search-banners-title grey-text">Search for Banners:</div>
+								<div class="dummy-line"></div>	
+							</div>
+						</div>
+						<div class="tracker-banners-wrapper side-margin-10x">
+							<div class="tracker-banner">
+								<img class="tracker-banner-icon" src="../resbox/banners/equinor.png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-banner-icon" src="../resbox/banners/hakull.jpg">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-banner-icon" src="../resbox/banners/klarna.png">
+							</div>
+							<div class="tracker-sign">
+								<img class="tracker-banner-icon" src="../resbox/banners/spectrum.jpg">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../resbox/jquery-3.2.1.min.js"></script>	
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>	
+	<script src="../resbox/materialize.min.js"></script>
+	<script src="../resbox/script.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDO_m3nAT1xNbRDUaZ82M2olJYZknu4z2Y&callback=initMap" type="text/javascript"></script>
+	<script>
+		function toggleMenu(x) {
+			x.classList.toggle("menu-change");
+			var effect = 'slide',
+			options = { direction:"right"},
+			duration = 250;
+			$(".tracker-map-wrapper").toggle();
+			document.getElementById("tracker-wrap").classList.toggle("super-div");
+			$('#tracker-wrap').toggle(effect, options, duration);
+			$('ul.tabs').tabs({
+				swipeable: true
+			});
+		}
+	</script>
+</body>
+</html>
