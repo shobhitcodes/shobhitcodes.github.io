@@ -140,38 +140,38 @@ header {
 	display: inline-block;
 }
 
-.checkpoint-box {
+.checkpoint-box, .personnel-box {
 	display: flex;
 	justify-content: start;
 	align-items: center;
 	margin-bottom: 15px;
 }
 
-.checkpoints-list {
+.checkpoints-list, .personnel-list {
 	margin-top: 15px;
 }
 
-.checkpoints-wrapper {
+.checkpoints-wrapper, .personnel-wrapper {
 	margin-top: 20px;
 }
 
-.checkpoint-icon {
+.checkpoint-icon, .personnel-icon {
 	margin-right: 7px;
 }
 
-.checkpoint-tag {
+.checkpoint-tag, .personnel-tag {
 	border-radius: 50%;
 	width: 50px;
 	height: 50px;
 	border: 5px solid #ccc;
 }
 
-.checkpoint-name{
+.checkpoint-name, .personnel-name{
 	font-weight: 600;
 	font-size: 18px;
 }
 
-.checkpoint-coordinates{
+.checkpoint-coordinates, .personnel-details{
 	font-size: 15px;
 }
 
@@ -198,4 +198,36 @@ header {
 
 .filter-personnel-title {
 	font-size: 15px;
+}
+
+.roster-start, .roster-stop {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 10px;
+}
+
+.roster-schedule-wrapper {
+	font-size: 15px;
+}
+
+.roster-date-wrapper {
+	width: 50%;
+}
+
+.roster-time-wrapper {
+	width: 44%;
+}
+
+.roster-time-container {
+	padding-top: 0 !important;
+}
+
+@media only screen and (min-width: 992px) {
+	.roster-schedule-wrapper {
+		display: flex;
+	}
+	.roster-start {
+		margin-right: 10px;
+	}
 }
