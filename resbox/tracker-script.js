@@ -54,11 +54,14 @@ function fetchMaps() {
 	$(mapList).empty()
 	if (typeof(Storage) !== "undefined") {
 		if(localStorage.getItem("map")) {
+			$("#tracker-noMaps-label").addClass("d-none");
 			let maps = JSON.parse(localStorage.getItem("map"));
 			console.log(maps);
 			maps.forEach( item => {
 				$(mapList).append(addMapItem(item.id, item.name, item.active));
 			});
+		} else {
+			$("#tracker-noMaps-label").removeClass("d-none");
 		}
 	}
 }
@@ -100,7 +103,7 @@ $(document).ready(function() {
 	});
 	//Event Handlers on Tab 1(Map) --end
 
-	
+
 	$("#cp-title").change(function() {
 		$("#cp-title").val() !== "" && $("#cp-type").val() !== null ? $("#cp-location").prop("disabled", false) : $("#cp-location").prop("disabled", true);
 	});
