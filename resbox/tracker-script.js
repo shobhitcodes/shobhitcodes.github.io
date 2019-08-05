@@ -39,6 +39,11 @@ function addMarker(location) {
  //     })
 }
 
+function showLayers() {
+	$("#tracker-layers-wrapper").removeClass("d-none");
+	fetchLayers();
+}
+
 var activateMarkerSelection = () => {
 	markerListener = map.addListener('click', function(event) {
 		if(currentMarkerCount + 1 == markers.length) {
@@ -60,19 +65,52 @@ function fetchMaps() {
 			maps.forEach( item => {
 				$(mapList).append(addMapItem(item.id, item.name, item.active));
 			});
+			showLayers();
 		} else {
 			$("#tracker-noMaps-label").removeClass("d-none");
 		}
 	}
 }
 
-function addMapItem(id, name, active) {
-	return `<li class="tracker-map-item">
+function fetchLayers() {
+	let layerList = "#tracker-layer-list";
+	$(layerList).empty()
+	if (typeof(Storage) !== "undefined") {
+		if(localStorage.getItem("layer")) {
+			$("#tracker-noLayers-label").addClass("d-none");
+			let layers = JSON.parse(localStorage.getItem("layer"));
+			console.log(layers);
+			layers.forEach( item => {
+				$(layerList).append(addLayerItem(item.id, item.name, item.active));
+			});
+		} else {
+			$("#tracker-noLayers-label").removeClass("d-none");
+		}
+	}
+}
+
+function addLayerItem(id, name, active) {
+	return `<li class="tracker-layer-item">
 	<div class="switch__container">
 	<span class="text__wrap">${name}</span>
 	<span class="switch">
 	<label>
 	<input data-id="${id}" type="checkbox" ${(active === 1) ? "checked" : "unchecked"}>
+	<span class="lever"></span>
+	</label>
+	</span>
+	</div>					
+	</li>
+	`;
+}
+
+function addMapItem(id, name, active) {
+	return `<li class="tracker-map-item">
+	<div class="switch__container">
+	<span class="text__wrap tracker-map-name">${name}</span>
+	<span class="switch">
+	<label>
+	<input data-id="${id}" class="tracker-map-active" type="checkbox" ${(active === 1) ? "checked" : "unchecked"}>
 	<span class="lever"></span>
 	</label>
 	</span>
@@ -89,8 +127,9 @@ function initMaterialize() {
 }
 
 $(document).ready(function() {
-	fetchMaps();
 	initMaterialize();
+	fetchMaps();
+	fetchLayers();
 	//Event Handlers on Tab 1(Map) --start
 	$("#map-title").change(() => {
 		$("#map-title").val() !== "" ? $("#map-add").prop("disabled", false) : $("#map-add").prop("disabled", true);
@@ -146,9 +185,6 @@ $(document).ready(function() {
 		$(event.target).toggleClass("active");
 		$(".tracker-banner-icon").not(event.target).removeClass("active");
 	});
-	
-	
-	
 	$("#map-add").click(() => {
 		if($("#map-title").val() !== "") {
 			let newMap, storedMap, newData = [];
@@ -185,9 +221,37 @@ $(document).ready(function() {
 		$("#tracker-add-map-wrapper").addClass("d-none");
 	});
 	$("#layer-add").click(() => {
-		if($("#map-title").val() !== "") {
-
+		if($("#layer-title").val() !== "") {
+			let newLayer, storedLayers, newData = [];
+			if (typeof(Storage) !== "undefined") {
+				if(localStorage.getItem("layer")) {
+					storedLayers = JSON.parse(localStorage.getItem("layer"));
+					storedLayers.forEach( item => {
+						// item.active = 0;
+						newData.push(item);
+					});
+					newLayer = {
+						"id" : getUID(),
+						"name" : $("#layer-title").val(),
+						"active" : 1,
+						"map" : getActiveMap()	
+					};
+					//newData.push(storedMap);
+					newData.push(newLayer);
+					localStorage.setItem("layer", JSON.stringify(newData));
+				} else {
+					newLayer = [{
+						"id" : getUID(),
+						"name" : $("#layer-title").val(),
+						"active" : 1,
+						"map" : getActiveMap()
+					}];
+					localStorage.setItem("layer", JSON.stringify(newLayer));
+				}
+			}
 		}
+		fetchLayers();
+		$("#tracker-add-layer-wrapper").addClass("d-none");
 	});
 	$(".tracker-sign-icon").on('dragstart', function() {
 		return false;
@@ -250,6 +314,7 @@ function addMap() {
 		$("#tracker-add-map-wrapper").removeClass("d-none");
 	} else {
 		$("#tracker-add-map-wrapper").addClass("d-none");
+		return;
 	}
 	let autocomplete = new google.maps.places.Autocomplete(document.getElementById('tracker-map-location-search'));
 	autocomplete.addListener('place_changed', function() {
@@ -277,3 +342,12 @@ function lockMap() {
 	map.setOptions({draggable: false});
 }
 
+function getActiveMap() {
+	let activeMap;
+	$("li.tracker-map-item").each(function() {
+		if($(this).find("input.tracker-map-active").prop("checked")) {
+			activeMap = $(this).find("input.tracker-map-active").data("id");
+		}
+	});
+	return activeMap;
+}
