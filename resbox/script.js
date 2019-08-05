@@ -1,11 +1,11 @@
 var toolbarOptions = [
-	[{ 'font': [] }],
-	[{ 'size': ['small', false, 'large', 'huge'] }],  
-	['bold', 'italic', 'underline', 'strike'],        
-	[{ 'color': [] }, { 'background': [] }],  
-	['link', 'image'],        
-	[{ 'align': [] }, { 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],       
-	['clean']                                         
+[{ 'font': [] }],
+[{ 'size': ['small', false, 'large', 'huge'] }],  
+['bold', 'italic', 'underline', 'strike'],        
+[{ 'color': [] }, { 'background': [] }],  
+['link', 'image'],        
+[{ 'align': [] }, { 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],       
+['clean']                                         
 ];
 
 if($('#article-content').length){
@@ -19,10 +19,10 @@ if($('#article-content').length){
 }
 
 function initMap() {
-    var map = new google.maps.Map(document.getElementById('mapCanvas'), {
-        center: {lat: 18.5204303, lng:73.85674369999992},
-        zoom: 13
-    });
+	var map = new google.maps.Map(document.getElementById('mapCanvas'), {
+		center: {lat: 18.5204303, lng:73.85674369999992},
+		zoom: 13
+	});
 }
 
 $(document).ready(function() {
@@ -50,9 +50,11 @@ $(document).ready(function() {
 	});
 
 	$('ul.tabs').tabs({
-        swipeable: true
-    });
-    
+		swipeable: true
+	});
+
+	$('select').material_select();
+	
 	$('.timepicker').pickatime({donetext:"Lukk",cleartext:"Tøm",canceltext:"Avbryt",twelvehour:!1});
 
 });
