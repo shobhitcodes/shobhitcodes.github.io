@@ -1,5 +1,7 @@
 var map;
 var markers = [];
+let defaultLayers, mapSet;
+// defaultLayers = [{"id":101,"name":"Personell"},{"id":102,"name":"Signsplan"},{"id":103,"name":"Bannerplan"}];
 var markerListener;
 var icons = {
 	checkpoint: {
@@ -15,9 +17,11 @@ function initMap() {
 		zoom: 13
 	});	
 }
+
 function getUID() {
 	return Math.random().toFixed(10).toString(36).substr(2, 16);
 }
+
 function addMarker(location) {
 	let markerId = getUID();
 	let marker = createHTMLMapMarker({
@@ -51,21 +55,26 @@ var activateMarkerSelection = () => {
 			markers.pop();
 		}
 		addMarker(event.latLng);
+		if($("#tracker-cp-loc").hasClass("loc-blinker")) {
+			$("#tracker-cp-loc").removeClass("loc-blinker");
+			$("#tracker-cp-loc").addClass("prismBlue");
+		}
+		$("#cp-title").val() !== "" ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
 	});
 };
 
 function fetchMaps() {
 	let mapList = "#tracker-map-list";
-	$(mapList).empty()
+	$(mapList).empty();
 	if (typeof(Storage) !== "undefined") {
 		if(localStorage.getItem("map")) {
 			$("#tracker-noMaps-label").addClass("d-none");
 			let maps = JSON.parse(localStorage.getItem("map"));
-			console.log(maps);
-			maps.forEach( item => {
+			mapSet = maps;
+			mapSet.forEach( item => {
 				$(mapList).append(addMapItem(item.id, item.name, item.active));
 			});
-			showLayers();
+			fetchLayers();
 		} else {
 			$("#tracker-noMaps-label").removeClass("d-none");
 		}
@@ -74,19 +83,38 @@ function fetchMaps() {
 
 function fetchLayers() {
 	let layerList = "#tracker-layer-list";
-	$(layerList).empty()
-	if (typeof(Storage) !== "undefined") {
-		if(localStorage.getItem("layer")) {
-			$("#tracker-noLayers-label").addClass("d-none");
-			let layers = JSON.parse(localStorage.getItem("layer"));
-			console.log(layers);
-			layers.forEach( item => {
-				$(layerList).append(addLayerItem(item.id, item.name, item.active));
-			});
-		} else {
-			$("#tracker-noLayers-label").removeClass("d-none");
+	$(layerList).empty();
+	let activeMap = mapSet.find(function(item) {return item.id == getActiveMap()});
+	activeMap.layer.forEach(layer => {
+		$(layerList).append(addLayerItem(layer.id, getLayerName(layer.id), layer.active));
+	});
+	// if (typeof(Storage) !== "undefined") {
+	// 	if(localStorage.getItem("layer")) {
+	// 		$("#tracker-noLayers-label").addClass("d-none");
+	// 		let layers = JSON.parse(localStorage.getItem("layer"));
+	// 		console.log(layers);
+	// 		layers.forEach( item => {
+	// 			$(layerList).append(addLayerItem(item.id, item.name, item.active));
+	// 		});
+	// 	} else {
+
+	// 	}
+	// }
+	// $("#tracker-noLayers-label").removeClass("d-none");
+}
+
+function getLayerName(id) {
+	let name;
+	defaultLayers.forEach( item => {
+		if(item.id === id) {
+			name = item.name;
 		}
-	}
+	});
+	return name;
+}
+
+function fetchCheckpoints() {
+	
 }
 
 function addLayerItem(id, name, active) {
@@ -110,7 +138,7 @@ function addMapItem(id, name, active) {
 	<span class="text__wrap tracker-map-name">${name}</span>
 	<span class="switch">
 	<label>
-	<input data-id="${id}" class="tracker-map-active" type="checkbox" ${(active === 1) ? "checked" : "unchecked"}>
+	<input data-id="${id}" data-active="${active}" class="" type="checkbox" ${(active === 1) ? "checked" : "unchecked"}>
 	<span class="lever"></span>
 	</label>
 	</span>
@@ -126,10 +154,29 @@ function initMaterialize() {
 	$("#cp-type").material_select();
 }
 
+function setDefaultLayers() {
+	if (typeof(Storage) !== "undefined") {
+			let layers = [];
+			let layersName = ["Personell", "Signsplan", "Bannerplan"];
+			for(let idStarts = 100, i = 0, layer; i < 3; i++) {
+				layer = {
+					"id" : idStarts + i + 1,
+					"name" : layersName[i]
+				};
+				layers.push(layer);
+			}
+			localStorage.setItem("layer", JSON.stringify(layers));
+			defaultLayers = layers;
+	}
+}
+
 $(document).ready(function() {
 	initMaterialize();
+	setDefaultLayers();
 	fetchMaps();
-	fetchLayers();
+	
+	fetchCheckpoints();
+
 	//Event Handlers on Tab 1(Map) --start
 	$("#map-title").change(() => {
 		$("#map-title").val() !== "" ? $("#map-add").prop("disabled", false) : $("#map-add").prop("disabled", true);
@@ -140,23 +187,64 @@ $(document).ready(function() {
 	$("#layer-title").change(() => {
 		$("#layer-title").val() !== "" ? $("#layer-add").prop("disabled", false) : $("#layer-add").prop("disabled", true);
 	});
+	$('.tracker-map-item input[type="checkbox"]').change((event) => {
+		//$(event.target).prop("checked") ? $(event.target).data("active", 1) : $(event.target).data("active", 0);
+		$(event.target).prop("checked") ? console.log("true") : console.log("false");
+		if($(event.target).prop("checked")){
+			$('.tracker-map-item input[data-active="0"]').prop("checked", false);
+		}
+	});
 	//Event Handlers on Tab 1(Map) --end
 
-
+	//Event Handlers on Tab 2(Track) --start
+	//Event Handlers on Tab 2(Track) --end
 	$("#cp-title").change(function() {
-		$("#cp-title").val() !== "" && $("#cp-type").val() !== null ? $("#cp-location").prop("disabled", false) : $("#cp-location").prop("disabled", true);
+		$("#cp-title").val() !== "" && $("#cp-type").val() !== null  && (currentMarkerCount + 1) == markers.length ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
 	});
-	$("#cp-type").change(function() {
-		$("#cp-type").val() !== null && $("#cp-title").val() !== "" ? $("#cp-location").prop("disabled", false) : $("#cp-location").prop("disabled", true);
-	});
-	$("#cp-location").click(() => {
-		console.log("dabaa");
-		$("#cp-add").prop("disabled", false);
-		currentMarkerCount = markers.length;
-		activateMarkerSelection("checkpoint");
-	});
+	// $("#cp-type").change(function() {
+	// 	$("#cp-type").val() !== null && $("#cp-title").val() !== "" ? $("#cp-location").prop("disabled", false) : $("#cp-location").prop("disabled", true);
+	// });
+	// $("#cp-location").click(() => {
+	// 	console.log("dabaa");
+	// 	$("#cp-add").prop("disabled", false);
+	// 	currentMarkerCount = markers.length;
+	// 	activateMarkerSelection("checkpoint");
+	// });
 	$("#cp-add").click(() => {
-		currentCkTitle = $("#cp-title").val();
+		currentCpTitle = $("#cp-title").val();
+		if($("#cp-title").val() !== "") {
+			let newCp, storedCps, newData = [];
+			if (typeof(Storage) !== "undefined") {
+				if(localStorage.getItem("checkpoint")) {
+					storedCps = JSON.parse(localStorage.getItem("checkpoint"));
+					storedCps.forEach( item => {
+						newData.push(item);
+					});
+					newCp = {
+						"id" : getUID(),
+						"name" : currentCpTitle,
+						"map" : getActiveMap(),
+						"center" : markers[markers.length-1].getPosition(),
+						"type" : $("#cp-type").val()
+					};
+					//newData.push(storedMap);
+					newData.push(newCp);
+					localStorage.setItem("checkpoint", JSON.stringify(newData));
+				} else {
+					newCp = [{
+						"id" : getUID(),
+						"name" : currentCpTitle,
+						"map" : getActiveMap(),
+						"center" : markers[markers.length-1].getPosition(),
+						"type" : $("#cp-type").val()
+					}];
+					localStorage.setItem("checkpoint", JSON.stringify(newCp));
+				}
+			}
+		}
+		//fetchMaps();
+		//$("#tracker-add-map-wrapper").addClass("d-none");
+		
 		//google.maps.event.removeListener(markerListener);
 		clearAllListeners();
 		$("#checkpoints-tally").text((parseInt($("#checkpoints-tally").text()) + 1));
@@ -166,7 +254,7 @@ $(document).ready(function() {
 			<div class="checkpoint-tag"></div>
 			</div>
 			<div class="checkpoint-info-wrapper">
-			<div id="${markers[markers.length-1].html.substr(14,10)}" class="checkpoint-name">${currentCkTitle}</div>
+			<div id="${markers[markers.length-1].html.substr(14,10)}" class="checkpoint-name">${currentCpTitle}</div>
 			<div class="checkpoint-coordinates">
 			${markers[markers.length-1].getPosition().lat().toFixed(3)} - ${markers[markers.length-1].getPosition().lng().toFixed(3)}
 			</div>
@@ -174,7 +262,9 @@ $(document).ready(function() {
 			</div>`);
 		$("#cp-title").val("");
 		$('#cp-type').material_select();
-		$("#cp-location").prop("disabled", true);
+		// $("#cp-location").prop("disabled", true);
+		$("#tracker-cp-loc, #add-checkpoint-wrapper").addClass("d-none");
+		$("#tracker-cp-addBtn").removeClass("d-none");
 		$("#cp-add").prop("disabled", true);
 	});
 	$(".tracker-sign-icon").click((event) => {
@@ -188,6 +278,7 @@ $(document).ready(function() {
 	$("#map-add").click(() => {
 		if($("#map-title").val() !== "") {
 			let newMap, storedMap, newData = [];
+			deafultLayers = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
 			if (typeof(Storage) !== "undefined") {
 				if(localStorage.getItem("map")) {
 					storedMap = JSON.parse(localStorage.getItem("map"));
@@ -199,6 +290,7 @@ $(document).ready(function() {
 						"id" : getUID(),
 						"name" : $("#map-title").val(),
 						"center" : map.getCenter(),
+						"layer" : deafultLayers,
 						"draggable" : $("#tracker-map-lock-position").prop("checked"),
 						"active" : 1
 					};
@@ -210,6 +302,7 @@ $(document).ready(function() {
 						"id" : getUID(),
 						"name" : $("#map-title").val(),
 						"center" : map.getCenter(),
+						"layer" : deafultLayers,
 						"draggable" : $("#tracker-map-lock-position").prop("checked"),
 						"active" : 1
 					}];
@@ -219,40 +312,44 @@ $(document).ready(function() {
 		}
 		fetchMaps();
 		$("#tracker-add-map-wrapper").addClass("d-none");
+		$("#tracker-layers-wrapper").removeClass("d-none");
 	});
-	$("#layer-add").click(() => {
-		if($("#layer-title").val() !== "") {
-			let newLayer, storedLayers, newData = [];
-			if (typeof(Storage) !== "undefined") {
-				if(localStorage.getItem("layer")) {
-					storedLayers = JSON.parse(localStorage.getItem("layer"));
-					storedLayers.forEach( item => {
-						// item.active = 0;
-						newData.push(item);
-					});
-					newLayer = {
-						"id" : getUID(),
-						"name" : $("#layer-title").val(),
-						"active" : 1,
-						"map" : getActiveMap()	
-					};
-					//newData.push(storedMap);
-					newData.push(newLayer);
-					localStorage.setItem("layer", JSON.stringify(newData));
-				} else {
-					newLayer = [{
-						"id" : getUID(),
-						"name" : $("#layer-title").val(),
-						"active" : 1,
-						"map" : getActiveMap()
-					}];
-					localStorage.setItem("layer", JSON.stringify(newLayer));
-				}
-			}
-		}
-		fetchLayers();
-		$("#tracker-add-layer-wrapper").addClass("d-none");
-	});
+
+	//To add new Layer to Database
+	// $("#layer-add").click(() => {
+	// 	if($("#layer-title").val() !== "") {
+	// 		let newLayer, storedLayers, newData = [];
+	// 		if (typeof(Storage) !== "undefined") {
+	// 			if(localStorage.getItem("layer")) {
+	// 				storedLayers = JSON.parse(localStorage.getItem("layer"));
+	// 				storedLayers.forEach( item => {
+	// 					// item.active = 0;
+	// 					newData.push(item);
+	// 				});
+	// 				newLayer = {
+	// 					"id" : getUID(),
+	// 					"name" : $("#layer-title").val(),
+	// 					"active" : 1,
+	// 					"map" : getActiveMap()	
+	// 				};
+	// 				//newData.push(storedMap);
+	// 				newData.push(newLayer);
+	// 				localStorage.setItem("layer", JSON.stringify(newData));
+	// 			} else {
+	// 				newLayer = [{
+	// 					"id" : getUID(),
+	// 					"name" : $("#layer-title").val(),
+	// 					"active" : 1,
+	// 					"map" : getActiveMap()
+	// 				}];
+	// 				localStorage.setItem("layer", JSON.stringify(newLayer));
+	// 			}
+	// 		}
+	// 	}
+	// 	fetchLayers();
+	// 	$("#tracker-add-layer-wrapper").addClass("d-none");
+	// });
+
 	$(".tracker-sign-icon").on('dragstart', function() {
 		return false;
 	});
@@ -312,8 +409,10 @@ function clearAllListeners() {
 function addMap() {
 	if($("#tracker-add-map-wrapper").hasClass("d-none")) {
 		$("#tracker-add-map-wrapper").removeClass("d-none");
+		$("#tracker-layers-wrapper").addClass("d-none");
 	} else {
 		$("#tracker-add-map-wrapper").addClass("d-none");
+		$("#tracker-layers-wrapper").removeClass("d-none");
 		return;
 	}
 	let autocomplete = new google.maps.places.Autocomplete(document.getElementById('tracker-map-location-search'));
@@ -338,16 +437,21 @@ function addLayer() {
 	}
 }
 
+function addCheckpoint() {
+	$("#tracker-cp-addBtn").addClass("d-none");
+	$("#tracker-cp-loc, #add-checkpoint-wrapper").removeClass("d-none");
+	currentMarkerCount = markers.length;
+	activateMarkerSelection("checkpoint");
+}
+
 function lockMap() {
 	map.setOptions({draggable: false});
 }
 
 function getActiveMap() {
-	let activeMap;
-	$("li.tracker-map-item").each(function() {
-		if($(this).find("input.tracker-map-active").prop("checked")) {
-			activeMap = $(this).find("input.tracker-map-active").data("id");
-		}
-	});
-	return activeMap;
+	return $("li.tracker-map-item").find('input[data-active="1"]').data("id");
+}
+
+function saveToLocalStorage(key, data) {
+
 }

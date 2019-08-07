@@ -260,3 +260,16 @@ header {
 	border-radius: 5px;
     padding: 0 20px;
 }
+
+.loc-blinker {
+	animation: blinker 1s linear infinite;
+	color: #00b2ee;
+}
+
+@keyframes blinker {  
+	50% { opacity: 0; }
+}
+
+#tracker-wrap .header {
+	padding-bottom: 5px;
+}
