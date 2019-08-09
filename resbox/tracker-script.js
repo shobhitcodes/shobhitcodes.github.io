@@ -1,25 +1,62 @@
-var map;
+//Global variables --start
+
+let map;
+let activeMap;
 var markers = [];
-let defaultLayers, mapSet;
-// defaultLayers = [{"id":101,"name":"Personell"},{"id":102,"name":"Signsplan"},{"id":103,"name":"Bannerplan"}];
+let layerSet, mapSet;
 var markerListener;
-var icons = {
-	checkpoint: {
-		icon: '../resbox/checkpoint.png'
-	}
-};
 var currentCkTitle;
 var currentMarkerCount;
 
-function initMap() {
-	map = new google.maps.Map(document.getElementById('mapCanvas'), {
-		center: {lat: 18.5204303, lng:73.85674369999992},
-		zoom: 13
-	});	
-}
+//Global variables --end
 
+//Helper Methods --start
+
+//Returns unique id
 function getUID() {
 	return Math.random().toFixed(10).toString(36).substr(2, 16);
+}
+
+//Helper Methods --end
+
+//GoogleMap Service Methods --start
+
+//Initializes and displays google map 
+function initGoogleMap() {
+	if( activeMap !== undefined) {
+		map = new google.maps.Map(document.getElementById('mapCanvas'), {
+			center: {lat: activeMap.center.lat, lng: activeMap.center.lng},
+			zoom: activeMap.zoom,
+			draggable: activeMap.draggable
+		});	
+	} else {
+		map = new google.maps.Map(document.getElementById('mapCanvas'), {
+			center: {lat: 18.5204303, lng:73.85674369999992},
+			zoom: 14
+		});	
+	}
+}
+
+//Activates Google map navigation by places
+function activatePlaceAutocomplete() {
+	let autocomplete = new google.maps.places.Autocomplete(document.getElementById('tracker-map-location-search'));
+	autocomplete.addListener('place_changed', function() {
+		var place = autocomplete.getPlace();
+		if (!place.geometry) {
+			return;
+		}
+		if (place.geometry.viewport) {
+			map.fitBounds(place.geometry.viewport);
+		} else {
+			map.setCenter(place.geometry.location); 
+		}
+	});
+}
+
+
+//Clears all listeners set on google map
+function clearAllListeners() {
+	google.maps.event.clearListeners(map, 'click');
 }
 
 function addMarker(location) {
@@ -43,11 +80,6 @@ function addMarker(location) {
  //     })
 }
 
-function showLayers() {
-	$("#tracker-layers-wrapper").removeClass("d-none");
-	fetchLayers();
-}
-
 var activateMarkerSelection = () => {
 	markerListener = map.addListener('click', function(event) {
 		if(currentMarkerCount + 1 == markers.length) {
@@ -63,6 +95,11 @@ var activateMarkerSelection = () => {
 	});
 };
 
+//GoogleMap Service Methods --end
+
+//Map Service Methods --start
+
+//Fetches maps from local storage and shows on Map wrapper 
 function fetchMaps() {
 	let mapList = "#tracker-map-list";
 	$(mapList).empty();
@@ -74,38 +111,95 @@ function fetchMaps() {
 			mapSet.forEach( item => {
 				$(mapList).append(addMapItem(item.id, item.name, item.active));
 			});
-			fetchLayers();
+			setActiveMap();
 		} else {
 			$("#tracker-noMaps-label").removeClass("d-none");
 		}
 	}
 }
 
+//Appends Map element to Map wrapper
+function addMapItem(id, name, active) {
+	return `<li class="tracker-map-item">
+	<div class="switch__container">
+	<span class="tracker-map-name text__wrap" data-id="${id}" data-active="${active}">${name}</span>
+	<span class="switch">
+	<label>
+	<input class="tracker-map-status" type="checkbox" ${(active === 1) ? "checked" : "unchecked"}>
+	<span class="lever"></span>
+	</label>
+	</span>
+	</div>					
+	</li>
+	`;
+}
+
+//Returns current active map id
+function getActiveMap() {
+	return $("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').data("id");
+}
+
+//Sets activeMap
+function setActiveMap(){
+	activeMap = mapSet.find(function(item) { return item.id == getActiveMap() });
+}
+
+//Shows/hide add map wrapper 
+function addMap() {
+	if($("#tracker-add-map-wrapper").hasClass("d-none")) {
+		$("#tracker-map-lock-position").prop("checked") ? map.setOptions({draggable: false}) : map.setOptions({draggable: true});
+		$("#tracker-add-map-wrapper").removeClass("d-none");
+		$("#tracker-layers-wrapper").addClass("d-none");
+	} else {
+		$("#tracker-add-map-wrapper").addClass("d-none");
+		if( activeMap !== undefined) {
+			activeMap.draggable ? map.setOptions({draggable: true}) : map.setOptions({draggable: false});
+		} else {
+			map.setOptions({draggable: true});
+		}
+		showLayers();
+	}
+}
+
+//Map Service Methods --end
+
+//Layer Service Methods --start
+
+//Sets default layers to Local Storage
+function setDefaultLayers() {
+	if(typeof(Storage) !== "undefined") {
+		let layers = [];
+		let layersName = ["Personell", "Signsplan", "Bannerplan"];
+		for(let idStarts = 100, i = 0, layer; i < 3; i++) {
+			layer = {
+				"id" : idStarts + i + 1,
+				"name" : layersName[i]
+			};
+			layers.push(layer);
+		}
+		localStorage.setItem("layer", JSON.stringify(layers));
+		layerSet = layers;
+	}
+}
+
+//Fetches layers from Activated Map and shows on Layer wrapper 
 function fetchLayers() {
 	let layerList = "#tracker-layer-list";
 	$(layerList).empty();
-	let activeMap = mapSet.find(function(item) {return item.id == getActiveMap()});
-	activeMap.layer.forEach(layer => {
-		$(layerList).append(addLayerItem(layer.id, getLayerName(layer.id), layer.active));
-	});
-	// if (typeof(Storage) !== "undefined") {
-	// 	if(localStorage.getItem("layer")) {
-	// 		$("#tracker-noLayers-label").addClass("d-none");
-	// 		let layers = JSON.parse(localStorage.getItem("layer"));
-	// 		console.log(layers);
-	// 		layers.forEach( item => {
-	// 			$(layerList).append(addLayerItem(item.id, item.name, item.active));
-	// 		});
-	// 	} else {
-
-	// 	}
-	// }
-	// $("#tracker-noLayers-label").removeClass("d-none");
+	if(activeMap !== undefined) {
+		activeMap.layer.forEach( layer => {
+			$(layerList).append(addLayerItem(layer.id, getLayerName(layer.id), layer.active));
+		});
+		$("#tracker-layers-wrapper").removeClass("d-none");
+	} else {
+		$("#tracker-layers-wrapper").addClass("d-none");
+	}
 }
 
+//Returns Layer name when layer id is passed to it
 function getLayerName(id) {
 	let name;
-	defaultLayers.forEach( item => {
+	layerSet.forEach( item => {
 		if(item.id === id) {
 			name = item.name;
 		}
@@ -113,80 +207,92 @@ function getLayerName(id) {
 	return name;
 }
 
+//Appends layer element to layer wrapper
+function addLayerItem(id, name, active) {
+	return `<li class="tracker-layer-item">
+	<div class="switch__container">
+	<span class="tracker-layer-name text__wrap" data-id="${id}" data-active="${active}">${name}</span>
+	<span class="switch">
+	<label>
+	<input class="tracker-layer-status" type="checkbox" ${(active === 1) ? "checked" : "unchecked"}>
+	<span class="lever"></span>
+	</label>
+	</span>
+	</div>					
+	</li>
+	`;
+}
+
+//Makes Layer wrapper visible if any layer exists
+function showLayers() {
+	$("#tracker-layer-list li").length !== 0 ? $("#tracker-layers-wrapper").removeClass("d-none") : $("#tracker-layers-wrapper").addClass("d-none");	
+}
+
+//Layer Service Methods --end
+
+//Checkpoint Methods --start
+
 function fetchCheckpoints() {
 	
 }
 
-function addLayerItem(id, name, active) {
-	return `<li class="tracker-layer-item">
-	<div class="switch__container">
-	<span class="text__wrap">${name}</span>
-	<span class="switch">
-	<label>
-	<input data-id="${id}" type="checkbox" ${(active === 1) ? "checked" : "unchecked"}>
-	<span class="lever"></span>
-	</label>
-	</span>
-	</div>					
-	</li>
-	`;
+//Checkpoint Methods --end
+
+
+
+
+
+function addLayer() {
+	if($("#tracker-add-layer-wrapper").hasClass("d-none")) {
+		$("#tracker-add-layer-wrapper").removeClass("d-none");
+	} else {
+		$("#tracker-add-layer-wrapper").addClass("d-none");
+	}
 }
 
-function addMapItem(id, name, active) {
-	return `<li class="tracker-map-item">
-	<div class="switch__container">
-	<span class="text__wrap tracker-map-name">${name}</span>
-	<span class="switch">
-	<label>
-	<input data-id="${id}" data-active="${active}" class="" type="checkbox" ${(active === 1) ? "checked" : "unchecked"}>
-	<span class="lever"></span>
-	</label>
-	</span>
-	</div>					
-	</li>
-	`;
+function addCheckpoint() {
+	$("#tracker-cp-addBtn").addClass("d-none");
+	$("#tracker-cp-loc, #add-checkpoint-wrapper").removeClass("d-none");
+	currentMarkerCount = markers.length;
+	activateMarkerSelection("checkpoint");
 }
 
+function lockMap() {
+	map.setOptions({draggable: false});
+}
+
+function saveToLocalStorage(key, data) {
+
+}
+
+//To initialize Materialize components
 function initMaterialize() {
 	$('ul.tabs').tabs({
 		swipeable: true
 	});
-	$("#cp-type").material_select();
-}
-
-function setDefaultLayers() {
-	if (typeof(Storage) !== "undefined") {
-			let layers = [];
-			let layersName = ["Personell", "Signsplan", "Bannerplan"];
-			for(let idStarts = 100, i = 0, layer; i < 3; i++) {
-				layer = {
-					"id" : idStarts + i + 1,
-					"name" : layersName[i]
-				};
-				layers.push(layer);
-			}
-			localStorage.setItem("layer", JSON.stringify(layers));
-			defaultLayers = layers;
-	}
+	// $("#cp-type").material_select();
 }
 
 $(document).ready(function() {
 	initMaterialize();
 	setDefaultLayers();
 	fetchMaps();
-	
+	initGoogleMap();
+	activatePlaceAutocomplete();
+	// setGoogleMap(getActiveMap());
+	fetchLayers();
 	fetchCheckpoints();
 
 	//Event Handlers on Tab 1(Map) --start
+
 	$("#map-title").change(() => {
-		$("#map-title").val() !== "" ? $("#map-add").prop("disabled", false) : $("#map-add").prop("disabled", true);
+		$("#map-title").val() != "" ? $("#map-add").prop("disabled", false) : $("#map-add").prop("disabled", true);
 	});
+
 	$("#tracker-map-lock-position").change(() => {
 		$("#tracker-map-lock-position").prop("checked") ? map.setOptions({draggable: false}) : map.setOptions({draggable: true});
 	});
-	$("#layer-title").change(() => {
-		$("#layer-title").val() !== "" ? $("#layer-add").prop("disabled", false) : $("#layer-add").prop("disabled", true);
-	});
+
 	$('.tracker-map-item input[type="checkbox"]').change((event) => {
 		//$(event.target).prop("checked") ? $(event.target).data("active", 1) : $(event.target).data("active", 0);
 		$(event.target).prop("checked") ? console.log("true") : console.log("false");
@@ -194,6 +300,53 @@ $(document).ready(function() {
 			$('.tracker-map-item input[data-active="0"]').prop("checked", false);
 		}
 	});
+
+	$("#map-add").click(() => {
+		if($("#map-title").val() !== "") {
+			let oldMapSet, newMapSet = [];
+			let initialLayers = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
+			let newMap = {
+				"id" : getUID(),
+				"name" : $("#map-title").val(),
+				"center" : map.getCenter(),
+				"layer" : initialLayers,
+				"draggable" : !$("#tracker-map-lock-position").prop("checked"),
+				"active" : 1,
+				"zoom" : map.getZoom()
+			};
+			if (typeof(Storage) !== "undefined") {
+				if(localStorage.getItem("map")) {
+					oldMapSet = JSON.parse(localStorage.getItem("map"));
+					oldMapSet.forEach( item => {
+						item.active = 0;
+						newMapSet.push(item);
+					});
+					newMapSet.push(newMap);
+					localStorage.setItem("map", JSON.stringify(newMapSet));
+				} else {
+					localStorage.setItem("map", JSON.stringify([newMap]));
+				}
+			}
+		}
+		fetchMaps();
+		fetchLayers();
+		$("#tracker-add-map-wrapper").addClass("d-none");
+		$("#map-title").val("");
+		$("#map-title").blur();
+		$("#map-add").prop("disabled", true);
+		$("#tracker-map-location-search").val("");
+		$("#tracker-map-lock-position").prop("checked", false);
+	});
+
+	$('li.tracker-layer-item input.tracker-layer-status[type="checkbox"]').change((event) => {
+		//$(event.target).prop("checked") ? $(event.target).data("active", 1) : $(event.target).data("active", 0);
+		$(event.target).prop("checked") ? console.log("true") : console.log("false");
+		//updateMap('layer', $(event.target).prop("checked"), $(event.target).closest(".tracker-map-name").data("id"));
+		// if($(event.target).prop("checked")){
+		// 	$('.tracker-map-item input[data-active="0"]').prop("checked", false);
+		// }
+	});
+
 	//Event Handlers on Tab 1(Map) --end
 
 	//Event Handlers on Tab 2(Track) --start
@@ -275,45 +428,7 @@ $(document).ready(function() {
 		$(event.target).toggleClass("active");
 		$(".tracker-banner-icon").not(event.target).removeClass("active");
 	});
-	$("#map-add").click(() => {
-		if($("#map-title").val() !== "") {
-			let newMap, storedMap, newData = [];
-			deafultLayers = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
-			if (typeof(Storage) !== "undefined") {
-				if(localStorage.getItem("map")) {
-					storedMap = JSON.parse(localStorage.getItem("map"));
-					storedMap.forEach( item => {
-						item.active = 0;
-						newData.push(item);
-					});
-					newMap = {
-						"id" : getUID(),
-						"name" : $("#map-title").val(),
-						"center" : map.getCenter(),
-						"layer" : deafultLayers,
-						"draggable" : $("#tracker-map-lock-position").prop("checked"),
-						"active" : 1
-					};
-					//newData.push(storedMap);
-					newData.push(newMap);
-					localStorage.setItem("map", JSON.stringify(newData));
-				} else {
-					newMap = [{
-						"id" : getUID(),
-						"name" : $("#map-title").val(),
-						"center" : map.getCenter(),
-						"layer" : deafultLayers,
-						"draggable" : $("#tracker-map-lock-position").prop("checked"),
-						"active" : 1
-					}];
-					localStorage.setItem("map", JSON.stringify(newMap));
-				}
-			}
-		}
-		fetchMaps();
-		$("#tracker-add-map-wrapper").addClass("d-none");
-		$("#tracker-layers-wrapper").removeClass("d-none");
-	});
+	
 
 	//To add new Layer to Database
 	// $("#layer-add").click(() => {
@@ -401,57 +516,3 @@ $(document).ready(function() {
 		};
 	});
 });
-
-function clearAllListeners() {
-	google.maps.event.clearListeners(map, 'click');
-}
-
-function addMap() {
-	if($("#tracker-add-map-wrapper").hasClass("d-none")) {
-		$("#tracker-add-map-wrapper").removeClass("d-none");
-		$("#tracker-layers-wrapper").addClass("d-none");
-	} else {
-		$("#tracker-add-map-wrapper").addClass("d-none");
-		$("#tracker-layers-wrapper").removeClass("d-none");
-		return;
-	}
-	let autocomplete = new google.maps.places.Autocomplete(document.getElementById('tracker-map-location-search'));
-	autocomplete.addListener('place_changed', function() {
-		var place = autocomplete.getPlace();
-		if (!place.geometry) {
-			return;
-		}
-		if (place.geometry.viewport) {
-			map.fitBounds(place.geometry.viewport);
-		} else {
-			map.setCenter(place.geometry.location); 
-		}
-	});
-}
-
-function addLayer() {
-	if($("#tracker-add-layer-wrapper").hasClass("d-none")) {
-		$("#tracker-add-layer-wrapper").removeClass("d-none");
-	} else {
-		$("#tracker-add-layer-wrapper").addClass("d-none");
-	}
-}
-
-function addCheckpoint() {
-	$("#tracker-cp-addBtn").addClass("d-none");
-	$("#tracker-cp-loc, #add-checkpoint-wrapper").removeClass("d-none");
-	currentMarkerCount = markers.length;
-	activateMarkerSelection("checkpoint");
-}
-
-function lockMap() {
-	map.setOptions({draggable: false});
-}
-
-function getActiveMap() {
-	return $("li.tracker-map-item").find('input[data-active="1"]').data("id");
-}
-
-function saveToLocalStorage(key, data) {
-
-}
