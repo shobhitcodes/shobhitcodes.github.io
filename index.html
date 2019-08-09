@@ -75,7 +75,7 @@
 							<div class="tracker-map-title-wrapper input-field top-margin-10x">
 								<input id="map-title" type="text" class="validate" maxlength="60">
 								<label for="map-title">Map Name</label>
-								<div id="map-title-error" class="validate-error go-relative pull-top-20x d-none"></div>
+								<div id="map-title-error" class="validate-error go-relative pull-top-20x d-none">This is required</div>
 							</div>
 							<div class="tracker-map-location-wrapper input-field clear-margin">
 								<div class="tracker-map-location-search-wrapper flex-start">
@@ -98,7 +98,7 @@
 								<button id="map-add" class="waves-effect waves-light btn clear-margin unset-text bg-prismBlue tracker-btn" disabled><i class="material-icons right left-margin-5x">add_circle</i>Add Map</button>
 							</div>
 						</div>
-						<div id="tracker-layers-wrapper" class="white__box z-depth-2">
+						<div id="tracker-layers-wrapper" class="white__box z-depth-2 d-none">
 							<div class="header font-18x grey-text bottom-margin-20x">Availebal Layers<!-- <i class="material-icons small green-text put-pointer no-select" onclick="addLayer()">add_box</i> --></div>
 							<div id="tracker-noLayers-label" class="d-none">No Layers available</div>
 							<ul id="tracker-layer-list">
@@ -402,9 +402,9 @@
 	<script src="../resbox/jquery-3.2.1.min.js"></script>	
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>	
 	<script src="../resbox/materialize.min.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDO_m3nAT1xNbRDUaZ82M2olJYZknu4z2Y&libraries=places" type="text/javascript"></script>
 	<script src="../resbox/html-map-marker.js"></script>
 	<script src="../resbox/tracker-script.js"></script>
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDO_m3nAT1xNbRDUaZ82M2olJYZknu4z2Y&libraries=places&callback=initMap" type="text/javascript"></script>
 	<script>
 		function toggleMenu(x) {
 			x.classList.toggle("menu-change");
