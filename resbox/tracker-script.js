@@ -380,7 +380,7 @@ $(document).ready(() => {
 		// showLayersCheck();
 		// updateSet("map", getActiveMapId(), "active", 1);
 		// updateLocalStorage("map");
-		$("li.tracker-layer-item input.tracker-layer-status").prop("disabled", true);
+		$("li.tracker-layer-item input.tracker-layer-status").prop("disabled", false);
 	});
 
 	//Event Handlers on Tab 1(Map) --end
