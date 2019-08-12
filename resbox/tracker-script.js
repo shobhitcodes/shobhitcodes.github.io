@@ -4,7 +4,7 @@ let map;
 let activeMap;
 let activeLayersSet;
 let layerSet, mapSet;
-let initialLayers = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
+const initialLayers = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
 
 var markers = [];
 var markerListener;
@@ -52,6 +52,7 @@ function initMaterialize() {
 	$('ul.tabs').tabs({
 		swipeable: true
 	});
+	$('.tooltipped').tooltip();
 	// $("#cp-type").material_select();
 }
 
@@ -215,7 +216,7 @@ function fetchLayers() {
 		activeMap.layer.forEach( layer => {
 			$(layerList).append(addLayerItem(layer.id, getLayerName(layer.id), layer.active));
 		});
-		$("li.tracker-layer-item input.tracker-layer-status").prop("checked", true).removeAttr("checked");
+		$("li.tracker-layer-item").find('.tracker-layer-name[data-active="1"]').parent().find("input.tracker-layer-status").removeAttr("checked").prop("checked", true);
 		$("#tracker-layers-wrapper").removeClass("d-none");
 	} else {
 		$("#tracker-layers-wrapper").addClass("d-none");
@@ -240,7 +241,7 @@ function addLayerItem(id, name, active) {
 	<span class="tracker-layer-name text__wrap" data-id="${id}" data-active="${active}">${name}</span>
 	<span class="switch">
 	<label>
-	<input class="tracker-layer-status" type="checkbox" ${(active === 1) ? "checked" : "unchecked"}>
+	<input class="tracker-layer-status" type="checkbox" ${(active === 1) ? "checked" : ""}>
 	<span class="lever"></span>
 	</label>
 	</span>
@@ -263,7 +264,18 @@ function fetchCheckpoints() {
 }
 
 //Checkpoint Methods --end
-
+function getCurrentLayerSet() {
+	let layerList = initialLayers;
+	$(".tracker-layer-name").each((index, item) => {
+		console.log($(item));
+		console.log($(item).data("id"));
+		console.log( $(item).data("active"));
+		console.log(layerList[layerList.findIndex(x => x.id == $(item).data("id"))].active);
+		layerList[layerList.findIndex(x => x.id == $(item).data("id"))].active = $(item).attr("data-active");
+	});
+	console.log(layerList);
+	return layerList;
+}
 
 //Main function(executes when DOM has been loaded) - execution starts here
 $(document).ready(() => {
@@ -302,23 +314,26 @@ $(document).ready(() => {
 		updateLocalStorage("map");
 	}));
 
-	//Shows/hides add map wrapper 
+	//Shows add map wrapper 
 	$("#add-map-btn").click(() => {
-		if($("#tracker-add-map-wrapper").hasClass("d-none")) {
-			$("#tracker-map-lock-position").prop("checked") ? map.setOptions({draggable: false}) : map.setOptions({draggable: true});
-			$("#tracker-add-map-wrapper").removeClass("d-none");
-			$("#tracker-layers-wrapper").addClass("d-none");
-			$("#tracker-map-list").addClass("no-pointer-events");
+		$("#add-map-btn").addClass("d-none");
+		$("#tracker-map-lock-position").prop("checked") ? map.setOptions({draggable: false}) : map.setOptions({draggable: true});
+		$("#tracker-add-map-wrapper").removeClass("d-none");
+		$("#tracker-layers-wrapper").addClass("d-none");
+		$("#tracker-map-list").addClass("no-pointer-events");
+	});
+
+	//Hides add map wrapper 
+	$("#close-addMap-btn").click(() => {
+		$("#add-map-btn").removeClass("d-none");
+		$("#tracker-add-map-wrapper").addClass("d-none");
+		if( activeMap !== undefined) {
+			activeMap.draggable ? map.setOptions({draggable: true}) : map.setOptions({draggable: false});
 		} else {
-			$("#tracker-add-map-wrapper").addClass("d-none");
-			if( activeMap !== undefined) {
-				activeMap.draggable ? map.setOptions({draggable: true}) : map.setOptions({draggable: false});
-			} else {
-				map.setOptions({draggable: true});
-			}
-			showLayersCheck();
-			$("#tracker-map-list").removeClass("no-pointer-events");
+			map.setOptions({draggable: true});
 		}
+		showLayersCheck();
+		$("#tracker-map-list").removeClass("no-pointer-events");
 	});
 
 	//Fires when a new map is added
@@ -359,11 +374,30 @@ $(document).ready(() => {
 		$("#tracker-map-lock-position").prop("checked", false);
 	});
 
-	//Fires when status of any layer changes
-	$('li.tracker-layer-item input.tracker-layer-status[type="checkbox"]').change((event) => {
-		$("li.tracker-layer-item input.tracker-layer-status").prop("disabled", true);
-		console.log($(event.target).prop("checked"));
+	
 
+	//Fires when status of any layer changes
+	$("#tracker-layer-list").on("change", '.tracker-layer-item input.tracker-layer-status[type="checkbox"]', (event) => {
+		$("li.tracker-layer-item input.tracker-layer-status").prop("disabled", true);
+		//let layers = initialLayers;
+		//let targetLayerId = $(event.target).parents("div.switch__container").children(".tracker-layer-name ").data("id");
+		// let active = $(event.target).prop("checked");
+		$(event.target).prop("checked") ? $(event.target).parents("div.switch__container").children(".tracker-layer-name ").attr("data-active", 1) : $(event.target).parents("div.switch__container").children(".tracker-layer-name").attr("data-active", 0);
+
+		//layers[layers.findIndex(x => x.id == targetLayerId)].active = active ? 1 : 0;
+		updateSet("map", getActiveMapId(), "layer", getCurrentLayerSet());
+		updateLocalStorage("map");
+
+		// let changeSet;
+		// if(key === "map") {
+		// 	changeSet = mapSet;
+		// }
+		// changeItemIndex = changeSet.findIndex(x => x.id == id);
+		// if(itemKey === "active") {
+		// 	changeSet.map(x => x.active = 0);
+		// }
+		// changeSet[changeItemIndex][itemKey] = value;
+		// mapSet = changeSet;
 		// $(event.target).prop("checked") ? $(event.target).data("active", 1) : $(event.target).data("active", 0);
 		// $(event.target).prop("checked") ? console.log("true") : console.log("false");
 		//updateMap('layer', $(event.target).prop("checked"), $(event.target).closest(".tracker-map-name").data("id"));

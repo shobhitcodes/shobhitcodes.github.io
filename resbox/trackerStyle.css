@@ -273,3 +273,7 @@ header {
 #tracker-wrap .header {
 	padding-bottom: 5px;
 }
+
+#tracker-wrap .material-icons.tooltipped {
+    color: #4CAF50 !important;
+}
