@@ -2,13 +2,16 @@
 
 let map;
 let activeMap;
-var markers = [];
+let activeLayersSet;
 let layerSet, mapSet;
+
+var markers = [];
 var markerListener;
 var currentCkTitle;
 var currentMarkerCount;
 
 //Global variables --end
+
 
 //Helper Methods --start
 
@@ -18,6 +21,7 @@ function getUID() {
 }
 
 //Helper Methods --end
+
 
 //GoogleMap Service Methods --start
 
