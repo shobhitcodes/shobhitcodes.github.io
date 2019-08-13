@@ -65,18 +65,15 @@ header {
 	all: initial;
 }
 
-/*.tracker-map, #mapCanvas{
-	height: calc(100vh - 50px);
-	margin-top: 50px;
-	}*/
 
-	@media only screen and (max-width: 900px) {
-		.wrapSS {
-			display: none;
-		}
-		.showSS {
-			display: block;
-		}
+
+@media only screen and (max-width: 900px) {
+	.wrapSS {
+		display: none;
+	}
+	.showSS {
+		display: block;
+	}
 	/*.ss-header {
 	display: flex;
     align-items: center;
@@ -243,22 +240,21 @@ header {
 }
 
 .noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome and Opera */
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
 }
 
 .checkpoint-gtag:hover {
-    border-color: #00b2ee;
+	border-color: #00b2ee;
 }
 
 .tracker-btn {
 	border-radius: 5px;
-    padding: 0 20px;
+	padding: 0 20px;
 }
 
 .loc-blinker {
@@ -275,5 +271,34 @@ header {
 }
 
 #tracker-wrap .material-icons.tooltipped {
-    color: #4CAF50 !important;
+	color: #4CAF50 !important;
 }
+
+.hover-grey:hover {
+	color: #666666 !important;
+}
+
+.gm-style-cc {
+	display: none !important;
+}
+
+a[target=_blank, title="Open this area in Google Maps (opens a new window)"]{
+	display:none !important;
+}
+
+a[href^="http://maps.google.com/maps"] {
+	display: none !important;
+}
+
+a[href^="https://maps.google.com/maps"] {
+	display: none !important;
+}
+
+/*div:has(> a[href^="https://maps.google.com/maps"]) {
+	display: none !important;
+	}*/
+
+/*.tracker-map, #mapCanvas{
+	height: calc(100vh - 50px);
+	margin-top: 50px;
+}*/
