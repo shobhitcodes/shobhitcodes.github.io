@@ -255,6 +255,7 @@ header {
 .tracker-btn {
 	border-radius: 5px;
 	padding: 0 20px;
+	width: 100px;
 }
 
 .loc-blinker {
@@ -294,11 +295,45 @@ a[href^="https://maps.google.com/maps"] {
 	display: none !important;
 }
 
-/*div:has(> a[href^="https://maps.google.com/maps"]) {
-	display: none !important;
-	}*/
+/*div:has(> a[href^="https://maps.google.com/maps"]) {	display: none !important;}*/
+/*.tracker-map, #mapCanvas{	height: calc(100vh - 50px);	margin-top: 50px;}*/
 
-/*.tracker-map, #mapCanvas{
-	height: calc(100vh - 50px);
-	margin-top: 50px;
-}*/
+#tracker-wrap .tooltipped {
+	line-height: 32px !important;
+}
+
+#add-cp-header {
+	padding-left: 30px;
+}
+
+#tracker-cp-loc{
+	top: 3px;
+	left: 0;
+	width: fit-content;
+}
+
+.tracker-btn span {
+	cursor: pointer;
+	display: inline-block;
+	position: relative;
+	transition: 0.5s;
+}
+
+.tracker-btn span:after {
+	content: '\00bb';
+	position: absolute;
+	opacity: 0;
+	top: -2px;
+	right: -20px;
+	transition: 0.5s;
+	font-size: 30px;
+}
+
+.tracker-btn:hover span {
+	padding-right: 20px;
+}
+
+.tracker-btn:hover span:after {
+	opacity: 1;
+	right: 0;
+}

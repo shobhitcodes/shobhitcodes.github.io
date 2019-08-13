@@ -66,6 +66,9 @@ function initMaterialize() {
 	// $("#cp-type").material_select();
 }
 
+function initTooltip(ele) {
+	$(ele).tooltip();
+}
 //Materialize Components Methods --end
 
 
@@ -137,6 +140,8 @@ var activateMarkerSelection = () => {
 		if($("#tracker-cp-loc").hasClass("loc-blinker")) {
 			$("#tracker-cp-loc").removeClass("loc-blinker");
 			$("#tracker-cp-loc").addClass("prismBlue");
+			$("#tracker-cp-loc").attr("data-tooltip", "Received checkpoint location");
+			initTooltip("#tracker-cp-loc");
 		}
 		$("#cp-title").val() !== "" ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
 	});
@@ -395,12 +400,33 @@ $(document).ready(() => {
 
 	//Event Handlers on Tab 2(Track) --start
 
-	//Shows add map wrapper 
+	//Shows add checkpoint wrapper 
 	$("#add-cp-btn").click(() => {
 		$("#add-cp-btn").addClass("d-none");
-		$("#tracker-cp-loc, #add-checkpoint-wrapper").removeClass("d-none");
+		$("#tracker-cp-loc").addClass("loc-blinker");
+		$("#add-checkpoint-wrapper, #close-addCp-btn").removeClass("d-none");
+		$("#tracker-cp-loc").attr("data-tooltip", "Waiting for checkpoint location");
+		initTooltip("#tracker-cp-loc");
 		currentMarkerCount = markers.length;
 		activateMarkerSelection("checkpoint");
+	});
+
+	//Hides add checkpoint wrapper 
+	$("#add-cp-header").on("click", '#close-addCp-btn', (event) => {
+		$("#add-checkpoint-wrapper, #close-addCp-btn").addClass("d-none");
+		$("#tracker-cp-loc").removeClass("loc-blinker prismBlue");
+		$("#add-cp-btn").removeClass("d-none");
+		$("#tracker-cp-loc").tooltip('remove');
+		clearAllListeners();
+		// $("#add-map-btn").removeClass("d-none");
+		// $("#tracker-add-map-wrapper").addClass("d-none");
+		// if( activeMap !== undefined) {
+		// 	activeMap.draggable ? map.setOptions({draggable: true}) : map.setOptions({draggable: false});
+		// } else {
+		// 	map.setOptions({draggable: true});
+		// }
+		// showLayersCheck();
+		// $("#tracker-map-list").removeClass("no-pointer-events");
 	});
 
 	//Event Handlers on Tab 2(Track) --end
