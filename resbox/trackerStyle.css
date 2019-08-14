@@ -337,3 +337,7 @@ a[href^="https://maps.google.com/maps"] {
 	opacity: 1;
 	right: 0;
 }
+
+.tracker-cp-type-wrapper .select-wrapper+label {
+	top: -30px !important;
+}

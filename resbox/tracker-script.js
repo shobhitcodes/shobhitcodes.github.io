@@ -3,7 +3,7 @@
 let map;
 let activeMap;
 let activeLayersSet;
-let layerSet, mapSet;
+let checkpointSet, layerSet, mapSet;
 let initialLayers = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
 
 var markers = [];
@@ -52,6 +52,22 @@ function updateSet(key, id, itemKey, value) {
 	mapSet = changeSet;
 }
 
+//Updates select options for passed elementSelector with new passed options
+function setSelectOption(eleSelector, newOptions, selectedOption) {
+	var select = $(eleSelector);
+	if(select.prop) {
+		var options = select.prop('options');
+	}
+	else {
+		var options = select.attr('options');
+	}
+	$('option', select).remove();
+	$.each(newOptions, function(val, text) {
+		options[options.length] = new Option(text, val);
+	});
+	select.val(selectedOption);
+}
+
 //Helper Methods --end
 
 
@@ -59,16 +75,31 @@ function updateSet(key, id, itemKey, value) {
 
 //To initialize Materialize components
 function initMaterialize() {
-	$('ul.tabs').tabs({
-		swipeable: true
+	$('#tracker-tabs').tabs({
+		swipeable: true,
+		onShow: function(tab) { onTabChange(tab); }
 	});
 	$('.tooltipped').tooltip();
-	// $("#cp-type").material_select();
 }
 
+//To initialize tooltip for passed element
 function initTooltip(ele) {
 	$(ele).tooltip();
 }
+
+//To initialize select options for passed element
+function initSelect(ele) {
+	$(ele).material_select();
+}
+
+//Executes on a tab change
+function onTabChange(tab) {
+	if(tab[0].attributes.id.value === "tracker-op-2"){
+		console.log("on track");
+		setCheckpointType();
+	}
+}
+
 //Materialize Components Methods --end
 
 
@@ -140,7 +171,7 @@ var activateMarkerSelection = () => {
 		if($("#tracker-cp-loc").hasClass("loc-blinker")) {
 			$("#tracker-cp-loc").removeClass("loc-blinker");
 			$("#tracker-cp-loc").addClass("prismBlue");
-			$("#tracker-cp-loc").attr("data-tooltip", "Received checkpoint location");
+			$("#tracker-cp-loc").attr("data-tooltip", "Checkpoint location locked");
 			initTooltip("#tracker-cp-loc");
 		}
 		$("#cp-title").val() !== "" ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
@@ -237,13 +268,7 @@ function fetchLayers() {
 
 //Returns Layer name when layer id is passed to it
 function getLayerName(id) {
-	let layerName;
-	layerSet.forEach( item => {
-		if(item.id === id) {
-			layerName = item.name;
-		}
-	});
-	return layerName;
+	return layerSet[layerSet.findIndex(x => x.id == id)].name;
 }
 
 //Appends layer element to layer wrapper
@@ -283,6 +308,20 @@ function getCurrentLayerSet() {
 
 function fetchCheckpoints() {
 	
+}
+
+//Sets active map layers on checkpoint type selection
+function setCheckpointType() {
+	let newOptions = {};
+	if(activeMap !== undefined) {
+		activeMap.layer.forEach( layer => {
+			if(layer.active === 1) {
+				newOptions[layer.id] = getLayerName(layer.id);
+			}
+		});
+		setSelectOption("#cp-type", newOptions, newOptions[Object.keys(newOptions)[0]]);
+		initSelect("#cp-type");
+	}
 }
 
 //Checkpoint Methods --end
@@ -400,6 +439,11 @@ $(document).ready(() => {
 
 	//Event Handlers on Tab 2(Track) --start
 
+	//Fires when input for checkpoint title on add checkpoint wrapper is changed 
+	$("#cp-title").change(function() {
+		$("#cp-title").val() !== "" && $("#cp-type").val() !== null  && (currentMarkerCount + 1) == markers.length ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
+	});
+
 	//Shows add checkpoint wrapper 
 	$("#add-cp-btn").click(() => {
 		$("#add-cp-btn").addClass("d-none");
@@ -418,30 +462,9 @@ $(document).ready(() => {
 		$("#add-cp-btn").removeClass("d-none");
 		$("#tracker-cp-loc").tooltip('remove');
 		clearAllListeners();
-		// $("#add-map-btn").removeClass("d-none");
-		// $("#tracker-add-map-wrapper").addClass("d-none");
-		// if( activeMap !== undefined) {
-		// 	activeMap.draggable ? map.setOptions({draggable: true}) : map.setOptions({draggable: false});
-		// } else {
-		// 	map.setOptions({draggable: true});
-		// }
-		// showLayersCheck();
-		// $("#tracker-map-list").removeClass("no-pointer-events");
 	});
 
-	//Event Handlers on Tab 2(Track) --end
-	$("#cp-title").change(function() {
-		$("#cp-title").val() !== "" && $("#cp-type").val() !== null  && (currentMarkerCount + 1) == markers.length ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
-	});
-	// $("#cp-type").change(function() {
-	// 	$("#cp-type").val() !== null && $("#cp-title").val() !== "" ? $("#cp-location").prop("disabled", false) : $("#cp-location").prop("disabled", true);
-	// });
-	// $("#cp-location").click(() => {
-	// 	console.log("dabaa");
-	// 	$("#cp-add").prop("disabled", false);
-	// 	currentMarkerCount = markers.length;
-	// 	activateMarkerSelection("checkpoint");
-	// });
+	//Fires when a new checkpoint is added
 	$("#cp-add").click(() => {
 		currentCpTitle = $("#cp-title").val();
 		if($("#cp-title").val() !== "") {
@@ -474,10 +497,6 @@ $(document).ready(() => {
 				}
 			}
 		}
-		//fetchMaps();
-		//$("#tracker-add-map-wrapper").addClass("d-none");
-		
-		//google.maps.event.removeListener(markerListener);
 		clearAllListeners();
 		$("#checkpoints-tally").text((parseInt($("#checkpoints-tally").text()) + 1));
 		$("#checkpoints-list-wrapper").append(
@@ -494,59 +513,39 @@ $(document).ready(() => {
 			</div>`);
 		$("#cp-title").val("");
 		$('#cp-type').material_select();
-		// $("#cp-location").prop("disabled", true);
-		$("#tracker-cp-loc, #add-checkpoint-wrapper").addClass("d-none");
+		$("#add-checkpoint-wrapper, #close-addCp-btn").addClass("d-none");
 		$("#add-cp-btn").removeClass("d-none");
 		$("#cp-add").prop("disabled", true);
+		$("#tracker-cp-loc").removeClass("loc-blinker prismBlue");
+		$("#tracker-cp-loc").tooltip('remove');
 	});
+
+	//Event Handlers on Tab 2(Track) --end
+	
+	//Event Handlers on Tab 3(Rostering/Personell) --start
+	//Event Handlers on Tab 3(Rostering/Personell) --end
+
+
+	//Event Handlers on Tab 4(Signsplan) --start
+	//Event Handlers on Tab 4(Signsplan) --end
+
+	//Event Handlers on Tab 5(Bannerplan) --start
+	//Event Handlers on Tab 5(Bannerplan) --end
+
 	$(".tracker-sign-icon").click((event) => {
 		$(event.target).toggleClass("active");
 		$(".tracker-sign-icon").not(event.target).removeClass("active");
 	});
+
 	$(".tracker-banner-icon").click((event) => {
 		$(event.target).toggleClass("active");
 		$(".tracker-banner-icon").not(event.target).removeClass("active");
 	});
 	
-
-	//To add new Layer to Database
-	// $("#layer-add").click(() => {
-	// 	if($("#layer-title").val() !== "") {
-	// 		let newLayer, storedLayers, newData = [];
-	// 		if (typeof(Storage) !== "undefined") {
-	// 			if(localStorage.getItem("layer")) {
-	// 				storedLayers = JSON.parse(localStorage.getItem("layer"));
-	// 				storedLayers.forEach( item => {
-	// 					// item.active = 0;
-	// 					newData.push(item);
-	// 				});
-	// 				newLayer = {
-	// 					"id" : getUID(),
-	// 					"name" : $("#layer-title").val(),
-	// 					"active" : 1,
-	// 					"map" : getActiveMap()	
-	// 				};
-	// 				//newData.push(storedMap);
-	// 				newData.push(newLayer);
-	// 				localStorage.setItem("layer", JSON.stringify(newData));
-	// 			} else {
-	// 				newLayer = [{
-	// 					"id" : getUID(),
-	// 					"name" : $("#layer-title").val(),
-	// 					"active" : 1,
-	// 					"map" : getActiveMap()
-	// 				}];
-	// 				localStorage.setItem("layer", JSON.stringify(newLayer));
-	// 			}
-	// 		}
-	// 	}
-	// 	fetchLayers();
-	// 	$("#tracker-add-layer-wrapper").addClass("d-none");
-	// });
-
 	$(".tracker-sign-icon").on('dragstart', function() {
 		return false;
 	});
+
 	$(".tracker-sign-icon").mousedown((event) => {
 		let draggedItem = event.target;
 		let currentDroppable = null; 
@@ -594,19 +593,55 @@ $(document).ready(() => {
 
 		};
 	});
+
 });
 
 
 /*
-//Commented code - can be used to further extend functionalities --start
+//Commented code - To further extend functionalities --start
 
-function addLayer() {
-	if($("#tracker-add-layer-wrapper").hasClass("d-none")) {
-		$("#tracker-add-layer-wrapper").removeClass("d-none");
-	} else {
-		$("#tracker-add-layer-wrapper").addClass("d-none");
+	function addLayer() {
+		if($("#tracker-add-layer-wrapper").hasClass("d-none")) {
+			$("#tracker-add-layer-wrapper").removeClass("d-none");
+		} else {
+			$("#tracker-add-layer-wrapper").addClass("d-none");
+		}
 	}
-}
 
-//Commented code - can be used to further extend functionalities --end
+	To add new Layer to Database
+	$("#layer-add").click(() => {
+		if($("#layer-title").val() !== "") {
+			let newLayer, storedLayers, newData = [];
+			if (typeof(Storage) !== "undefined") {
+				if(localStorage.getItem("layer")) {
+					storedLayers = JSON.parse(localStorage.getItem("layer"));
+					storedLayers.forEach( item => {
+						// item.active = 0;
+						newData.push(item);
+					});
+					newLayer = {
+						"id" : getUID(),
+						"name" : $("#layer-title").val(),
+						"active" : 1,
+						"map" : getActiveMap()	
+					};
+					//newData.push(storedMap);
+					newData.push(newLayer);
+					localStorage.setItem("layer", JSON.stringify(newData));
+				} else {
+					newLayer = [{
+						"id" : getUID(),
+						"name" : $("#layer-title").val(),
+						"active" : 1,
+						"map" : getActiveMap()
+					}];
+					localStorage.setItem("layer", JSON.stringify(newLayer));
+				}
+			}
+		}
+		fetchLayers();
+		$("#tracker-add-layer-wrapper").addClass("d-none");
+	});
+
+//Commented code - To further extend functionalities --end
 */
