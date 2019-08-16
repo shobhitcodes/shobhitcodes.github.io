@@ -144,11 +144,19 @@ header {
 	margin-bottom: 15px;
 }
 
-.checkpoints-list, .personnel-list {
+.personnel-list {
 	margin-top: 15px;
 }
 
-.checkpoints-wrapper, .personnel-wrapper {
+#tracker-checkpoint-list {
+	margin-top: 15px;
+}
+
+.personnel-wrapper {
+	margin-top: 20px;
+}
+
+#tracker-checkpoint-wrapper {
 	margin-top: 20px;
 }
 
@@ -340,4 +348,8 @@ a[href^="https://maps.google.com/maps"] {
 
 .tracker-cp-type-wrapper .select-wrapper+label {
 	top: -30px !important;
+}
+
+#tracker-noCheckpoint-label {
+	margin-top: 5px;
 }

@@ -1,17 +1,7 @@
 //Global variables --start
 
-let map;
-let activeMap;
-let activeLayersSet;
-let checkpointSet, layerSet, mapSet;
-let initialLayers = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
-
-var markers = [];
-var markerListener;
-var currentCkTitle;
-var currentMarkerCount;
 let defaultMapOptions = {
-	center: {lat: 18.5204303, lng:73.85674369999992},
+	center: {lat: 18.5204303, lng:73.85674369999992}, //Location - Pune
 	zoom: 14,
 	clickableIcons: false,
 	disableDefaultUI: true,
@@ -20,6 +10,14 @@ let defaultMapOptions = {
 	disableDoubleClickZoom: true,
 	draggable: true
 };
+let initialLayers = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
+let newMarkerFlag = false;
+let map;
+let activeMap;
+let checkpointSet, layerSet, mapSet;
+let markers = [];
+let markerListener;
+//let activeLayersSet;
 
 //Global variables --end
 
@@ -31,7 +29,7 @@ function getUID() {
 	return Math.random().toFixed(10).toString(36).substr(2, 16);
 }
 
-//Updates Database
+//Updates database
 function updateLocalStorage(key) {
 	if(key === "map"){
 		localStorage.setItem("map", JSON.stringify(mapSet));
@@ -53,19 +51,24 @@ function updateSet(key, id, itemKey, value) {
 }
 
 //Updates select options for passed elementSelector with new passed options
-function setSelectOption(eleSelector, newOptions, selectedOption) {
-	var select = $(eleSelector);
-	if(select.prop) {
-		var options = select.prop('options');
+function setSelectOption(ele, newOptions, selectedOption) {
+	if(ele.prop) {
+		var options = ele.prop('options');
 	}
 	else {
-		var options = select.attr('options');
+		var options = ele.attr('options');
 	}
-	$('option', select).remove();
+	$('option', ele).remove();
 	$.each(newOptions, function(val, text) {
 		options[options.length] = new Option(text, val);
 	});
-	select.val(selectedOption);
+	ele.val(selectedOption);
+}
+
+//Sets and initializes passed element with passed string
+function setTooltip(ele, tooltipText){
+	ele.attr("data-tooltip", tooltipText);
+	initTooltip(ele);
 }
 
 //Helper Methods --end
@@ -84,19 +87,20 @@ function initMaterialize() {
 
 //To initialize tooltip for passed element
 function initTooltip(ele) {
-	$(ele).tooltip();
+	ele.tooltip();
 }
 
 //To initialize select options for passed element
 function initSelect(ele) {
-	$(ele).material_select();
+	ele.material_select();
 }
 
 //Executes on a tab change
 function onTabChange(tab) {
-	if(tab[0].attributes.id.value === "tracker-op-2"){
-		console.log("on track");
+	if(tab[0].attributes.id.value === "tracker-op-2") {
 		setCheckpointType();
+	} else {
+		removeAddCheckpoint();
 	}
 }
 
@@ -140,6 +144,7 @@ function clearAllListeners() {
 	google.maps.event.clearListeners(map, 'click');
 }
 
+//Adds marker(checkpoint) on google map at passed location 
 function addMarker(location) {
 	let markerId = getUID();
 	let marker = createHTMLMapMarker({
@@ -149,35 +154,30 @@ function addMarker(location) {
 		id: markerId
 	});
 	markers.push(marker);
-	console.log(markers[0].position);
-	console.log(markers[0].getPosition().lat());
-	console.log(markers[0].getPosition().lng());
-	// panes.overlayMouseTarget.appendChild(div);  
-	// let overlayListener = overlay.addListener('click', function(event) {
-	// 	console.log("overlay dabaa");
-	// });
-	// google.maps.event.addDomListener(markers, 'click', function(){
- //      console.log("overlay dabaa");
- //     })
 }
 
-var activateMarkerSelection = () => {
+//Activates marker selection - listens for click on google maps and creates custom marker on the clicked location
+function activateMarkerSelection() {
 	markerListener = map.addListener('click', function(event) {
-		if(currentMarkerCount + 1 == markers.length) {
-			markers[markers.length-1].setMap(null);
-			markers.pop();
-		}
+		removeUnsavedMarker();
 		addMarker(event.latLng);
-		if($("#tracker-cp-loc").hasClass("loc-blinker")) {
-			$("#tracker-cp-loc").removeClass("loc-blinker");
-			$("#tracker-cp-loc").addClass("prismBlue");
-			$("#tracker-cp-loc").attr("data-tooltip", "Checkpoint location locked");
-			initTooltip("#tracker-cp-loc");
-		}
-		$("#cp-title").val() !== "" ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
+		newMarkerFlag = true;
+		checkpointLocked();
 	});
 };
 
+//Removes unsaved marker(checkpoint) from google map
+function removeUnsavedMarker() {
+	if(newMarkerFlag === true) {
+		markers[markers.length-1].setMap(null);
+		markers.pop();
+		newMarkerFlag = false;
+	}
+}
+
+function setMarkers() {
+
+}
 //GoogleMap Service Methods --end
 
 
@@ -306,8 +306,27 @@ function getCurrentLayerSet() {
 
 //Checkpoint Methods --start
 
+
+//Fetches checkpoints from local storage and shows on checkpoint wrapper 
 function fetchCheckpoints() {
-	
+	let cpList = "#tracker-checkpoint-list";
+	$(cpList).empty();
+	if (typeof(Storage) !== "undefined") {
+		if(localStorage.getItem("checkpoint")) {
+			$("#tracker-noCheckpoint-label").addClass("d-none");
+			let cps = JSON.parse(localStorage.getItem("checkpoint"));
+			checkpointSet = cps;
+			checkpointSet.forEach( item => {
+				if(item.map === getActiveMapId()) {
+					$(cpList).append(addCheckpointItem(item.id, item.name, item.position));
+				}
+			});
+			setMarkers();
+			setCheckpointTally();
+		} else {
+			$("#tracker-noCheckpoint-label").removeClass("d-none");
+		}
+	}
 }
 
 //Sets active map layers on checkpoint type selection
@@ -319,9 +338,56 @@ function setCheckpointType() {
 				newOptions[layer.id] = getLayerName(layer.id);
 			}
 		});
-		setSelectOption("#cp-type", newOptions, newOptions[Object.keys(newOptions)[0]]);
-		initSelect("#cp-type");
+		setSelectOption($("#cp-type"), newOptions, Object.keys(newOptions)[0]);
+		initSelect($("#cp-type"));
 	}
+}
+
+//Controls visibility of checkpoint save button
+function saveCheckpointCheck() {
+	$("#cp-title").val() !== "" && $("#cp-type").val() !== null  && newMarkerFlag === true ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
+}
+
+//Executes when checkpoint(marker) is added on google map
+function checkpointLocked() {
+	$("#tracker-cp-loc").removeClass("loc-blinker").addClass("prismBlue");
+	setTooltip($("#tracker-cp-loc"), "Checkpoint location locked");
+	saveCheckpointCheck();
+}
+
+//Closes checkpoint add process
+function removeAddCheckpoint() {
+	if(!$("#add-checkpoint-wrapper").hasClass("d-none")) {
+		$("#add-checkpoint-wrapper, #close-addCp-btn").addClass("d-none");
+		$("#tracker-cp-loc").removeClass("loc-blinker prismBlue");
+		$("#tracker-cp-loc").tooltip("remove");
+		$("#add-cp-btn").removeClass("d-none");
+		$("#cp-add").prop("disabled", true);
+		clearAllListeners();
+		removeUnsavedMarker();
+	}
+}
+
+//Sets checkpoint tally
+function setCheckpointTally() {
+	$("#checkpoints-tally").text(markers.length);
+}
+
+//Appends checkpoint element to checkpoint wrapper
+function addCheckpointItem(id, title, position) {
+	return `<li class="tracker-checkpoint-item">
+	<div class="checkpoint-box">
+	<div class="checkpoint-icon">
+	<div class="checkpoint-tag"></div>
+	</div>
+	<div class="checkpoint-info-wrapper">
+	<div data-id="${id}" class="checkpoint-name">${title}</div>
+	<div class="checkpoint-coordinates">${position.lat.toFixed(3)} - ${position.lng.toFixed(3)}
+	</div>
+	</div>
+	</div>				
+	</li>
+	`;
 }
 
 //Checkpoint Methods --end
@@ -360,6 +426,7 @@ $(document).ready(() => {
 		initGoogleMap()
 		fetchLayers();
 		showLayersCheck();
+		fetchCheckpoints();
 		updateSet("map", getActiveMapId(), "active", 1);
 		updateLocalStorage("map");
 	}));
@@ -440,84 +507,48 @@ $(document).ready(() => {
 	//Event Handlers on Tab 2(Track) --start
 
 	//Fires when input for checkpoint title on add checkpoint wrapper is changed 
-	$("#cp-title").change(function() {
-		$("#cp-title").val() !== "" && $("#cp-type").val() !== null  && (currentMarkerCount + 1) == markers.length ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
+	$("#cp-title").change(() => {
+		saveCheckpointCheck();
 	});
 
 	//Shows add checkpoint wrapper 
 	$("#add-cp-btn").click(() => {
 		$("#add-cp-btn").addClass("d-none");
 		$("#tracker-cp-loc").addClass("loc-blinker");
+		setTooltip($("#tracker-cp-loc"), "Waiting for checkpoint location");
 		$("#add-checkpoint-wrapper, #close-addCp-btn").removeClass("d-none");
-		$("#tracker-cp-loc").attr("data-tooltip", "Waiting for checkpoint location");
-		initTooltip("#tracker-cp-loc");
-		currentMarkerCount = markers.length;
-		activateMarkerSelection("checkpoint");
+		newMarkerFlag = false;
+		activateMarkerSelection();
 	});
 
 	//Hides add checkpoint wrapper 
 	$("#add-cp-header").on("click", '#close-addCp-btn', (event) => {
-		$("#add-checkpoint-wrapper, #close-addCp-btn").addClass("d-none");
-		$("#tracker-cp-loc").removeClass("loc-blinker prismBlue");
-		$("#add-cp-btn").removeClass("d-none");
-		$("#tracker-cp-loc").tooltip('remove');
-		clearAllListeners();
+		removeAddCheckpoint();
 	});
 
 	//Fires when a new checkpoint is added
 	$("#cp-add").click(() => {
-		currentCpTitle = $("#cp-title").val();
-		if($("#cp-title").val() !== "") {
-			let newCp, storedCps, newData = [];
-			if (typeof(Storage) !== "undefined") {
-				if(localStorage.getItem("checkpoint")) {
-					storedCps = JSON.parse(localStorage.getItem("checkpoint"));
-					storedCps.forEach( item => {
-						newData.push(item);
-					});
-					newCp = {
-						"id" : getUID(),
-						"name" : currentCpTitle,
-						"map" : getActiveMapId(),
-						"center" : markers[markers.length-1].getPosition(),
-						"type" : $("#cp-type").val()
-					};
-					//newData.push(storedMap);
-					newData.push(newCp);
-					localStorage.setItem("checkpoint", JSON.stringify(newData));
-				} else {
-					newCp = [{
-						"id" : getUID(),
-						"name" : currentCpTitle,
-						"map" : getActiveMapId(),
-						"center" : markers[markers.length-1].getPosition(),
-						"type" : $("#cp-type").val()
-					}];
-					localStorage.setItem("checkpoint", JSON.stringify(newCp));
-				}
+		let cpSet = [];
+		let newCp = {
+			"id" : getUID(),
+			"name" : $("#cp-title").val(),
+			"map" : getActiveMapId(),
+			"position" : markers[markers.length-1].getPosition(),
+			"layer" : $("#cp-type").val()
+		};
+		if (typeof(Storage) !== "undefined") {
+			if(localStorage.getItem("checkpoint")) {
+				cpSet = JSON.parse(localStorage.getItem("checkpoint"));
+				cpSet.push(newCp);
+				localStorage.setItem("checkpoint", JSON.stringify(cpSet));
+			} else {
+				localStorage.setItem("checkpoint", JSON.stringify([newCp]));
 			}
 		}
-		clearAllListeners();
-		$("#checkpoints-tally").text((parseInt($("#checkpoints-tally").text()) + 1));
-		$("#checkpoints-list-wrapper").append(
-			`<div class="checkpoint-box">
-			<div class="checkpoint-icon">
-			<div class="checkpoint-tag"></div>
-			</div>
-			<div class="checkpoint-info-wrapper">
-			<div id="${markers[markers.length-1].html.substr(14,10)}" class="checkpoint-name">${currentCpTitle}</div>
-			<div class="checkpoint-coordinates">
-			${markers[markers.length-1].getPosition().lat().toFixed(3)} - ${markers[markers.length-1].getPosition().lng().toFixed(3)}
-			</div>
-			</div>
-			</div>`);
+		fetchCheckpoints();		
+		removeAddCheckpoint();
 		$("#cp-title").val("");
-		$('#cp-type').material_select();
-		$("#add-checkpoint-wrapper, #close-addCp-btn").addClass("d-none");
-		$("#add-cp-btn").removeClass("d-none");
-		$("#cp-add").prop("disabled", true);
-		$("#tracker-cp-loc").removeClass("loc-blinker prismBlue");
-		$("#tracker-cp-loc").tooltip('remove');
+		$("#cp-title").blur();
 	});
 
 	//Event Handlers on Tab 2(Track) --end

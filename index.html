@@ -55,7 +55,7 @@
 					<div id="tracker-op-1" class="col s12">
 						<div class="white__box z-depth-2">
 							<div class="header grey-text">Availebal Maps<i id="add-map-btn" class="material-icons tooltipped small green-text put-pointer no-select " data-position="bottom" data-delay="50" data-tooltip="Add new map">add_box</i></div>
-							<div id="tracker-noMaps-label" class="d-none">No Maps available</div>
+							<div id="tracker-noMaps-label" class="d-none">No maps available</div>
 							<ul id="tracker-map-list"></ul>
 						</div>
 						<div id="tracker-add-map-wrapper" class="white__box z-depth-2 d-none">
@@ -88,7 +88,7 @@
 						</div>
 						<div id="tracker-layers-wrapper" class="white__box z-depth-2 d-none">
 							<div class="header grey-text">Availebal Layers</div>
-							<div id="tracker-noLayers-label" class="d-none">No Layers available</div>
+							<div id="tracker-noLayers-label" class="d-none">No layers available</div>
 							<ul id="tracker-layer-list"></ul>
 						</div>
 						<!-- <div id="tracker-add-layer-wrapper" class="white__box z-depth-2 d-none">
@@ -105,32 +105,27 @@
 					</div>
 
 					<div id="tracker-op-2" class="col s12" style="display:none">
-						<div class="white__box z-depth-2">
-							<div id="add-checkpoint-box">
-								<div id="add-cp-header" class="header grey-text">Add a new checkpoint<i id="add-cp-btn" class="material-icons tooltipped small green-text put-pointer no-select" data-position="bottom" data-delay="50" data-tooltip="Add new checkpoint">add_box</i><i id="tracker-cp-loc" class="material-icons" data-position="bottom" data-delay="50">location_searching</i><i id="close-addCp-btn" class="material-icons small put-pointer no-select hover-grey d-none">close</i></div>
-								<div id="add-checkpoint-wrapper" class="d-none">
-									<div class="tracker-cp-title-wrapper input-field top-margin-25x">
-										<input id="cp-title" type="text" class="validate" maxlength="60" placeholder="">
-										<label for="cp-title">Checkpoint Name</label>
-										<!-- <div id="cp-title-error" class="validate-error go-relative pull-top-20x d-none"></div> -->
-									</div>
-									<div class="tracker-cp-type-wrapper input-field">
-										<select id="cp-type">
-											<!-- <option value="1">Personell</option>
-											<option value="2">Signs</option>
-											<option value="3">Banners</option> -->
-										</select>
-										<label>Checkpoint Type</label>
-									</div>
-									<div class="tracker-cp-add-wrapper top-margin-10x flex-end">
-										<button id="cp-add" class="waves-effect waves-light btn clear-margin unset-text bg-prismBlue tracker-btn" disabled><span>Save</span></button>
-									</div>
+						<div id="add-checkpoint-box" class="white__box z-depth-2">
+							<div id="add-cp-header" class="header grey-text">Add a new checkpoint<i id="add-cp-btn" class="material-icons tooltipped small green-text put-pointer no-select" data-position="bottom" data-delay="50" data-tooltip="Add new checkpoint">add_box</i><i id="tracker-cp-loc" class="material-icons" data-position="bottom" data-delay="50">location_searching</i><i id="close-addCp-btn" class="material-icons small put-pointer no-select hover-grey d-none">close</i></div>
+							<div id="add-checkpoint-wrapper" class="d-none">
+								<div class="tracker-cp-title-wrapper input-field top-margin-25x">
+									<input id="cp-title" type="text" class="validate" maxlength="60" placeholder="">
+									<label for="cp-title">Checkpoint Name</label>
+									<!-- <div id="cp-title-error" class="validate-error go-relative pull-top-20x d-none"></div> -->
+								</div>
+								<div class="tracker-cp-type-wrapper input-field">
+									<select id="cp-type"></select>
+									<label>Checkpoint Type</label>
+								</div>
+								<div class="tracker-cp-add-wrapper top-margin-10x flex-end">
+									<button id="cp-add" class="waves-effect waves-light btn clear-margin unset-text bg-prismBlue tracker-btn" disabled><span>Save</span></button>
 								</div>
 							</div>
 						</div>
-						<div class="checkpoints-wrapper side-margin-10x">
+						<div id="tracker-checkpoint-wrapper" class="side-margin-10x">
 							<div class="checkpoints-title">Checkpoints (<span id="checkpoints-tally">0</span>)</div>
-							<div id="checkpoints-list-wrapper" class="checkpoints-list"></div>								
+							<div id="tracker-noCheckpoint-label" class="d-none">No checkpoints available</div>
+							<ul id="tracker-checkpoint-list"></ul>							
 						</div>
 					</div>
 
