@@ -176,8 +176,19 @@ function removeUnsavedMarker() {
 }
 
 function setMarkers() {
-
+	checkpointSet.forEach( item => {
+		if(item.map === getActiveMapId()) {
+			let marker = createHTMLMapMarker({
+				latlng: new google.maps.LatLng(item.position.lat,item.position.lng),
+				map: map,
+				html: `<div data-id="${item.id}" class="checkpoint-gtag white droppable"></div>`,
+				id: item.id
+			});
+			markers.push(marker);
+		}
+	});
 }
+
 //GoogleMap Service Methods --end
 
 
@@ -482,6 +493,7 @@ $(document).ready(() => {
 		}
 		fetchMaps();
 		fetchLayers();
+		fetchCheckpoints();
 		$("#add-map-btn").removeClass("d-none");
 		$("#tracker-map-list").removeClass("no-pointer-events");
 		$("#tracker-add-map-wrapper").addClass("d-none");
