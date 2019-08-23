@@ -178,13 +178,15 @@ function removeUnsavedMarker() {
 function setMarkers() {
 	checkpointSet.forEach( item => {
 		if(item.map === getActiveMapId()) {
-			let marker = createHTMLMapMarker({
-				latlng: new google.maps.LatLng(item.position.lat,item.position.lng),
-				map: map,
-				html: `<div data-id="${item.id}" class="checkpoint-gtag white droppable"></div>`,
-				id: item.id
-			});
-			markers.push(marker);
+			if(getActiveLayers().includes(item.layer)) {
+				let marker = createHTMLMapMarker({
+					latlng: new google.maps.LatLng(item.position.lat,item.position.lng),
+					map: map,
+					html: `<div data-id="${item.id}" class="checkpoint-gtag white droppable"></div>`,
+					id: item.id
+				});
+				markers.push(marker);
+			}
 		}
 	});
 }
@@ -312,11 +314,21 @@ function getCurrentLayerSet() {
 	return layerList;
 }
 
+//Returns active layers list
+function getActiveLayers() {
+	let activeLayers = [];
+	$("li.tracker-layer-item").each( (index,ele) => {
+		if( $(ele).find('.tracker-layer-name').attr("data-active") === "1") {
+			activeLayers.push($(ele).find('.tracker-layer-name').attr("data-id"));
+		}
+	});
+	return activeLayers;
+}
+
 //Layer Service Methods --end
 
 
 //Checkpoint Methods --start
-
 
 //Fetches checkpoints from local storage and shows on checkpoint wrapper 
 function fetchCheckpoints() {
