@@ -176,6 +176,10 @@ function removeUnsavedMarker() {
 }
 
 function setMarkers() {
+	while(markers.length) {
+		markers[markers.length-1].setMap(null);
+		markers.pop();
+	}
 	checkpointSet.forEach( item => {
 		if(item.map === getActiveMapId()) {
 			if(getActiveLayers().includes(item.layer)) {
@@ -523,6 +527,7 @@ $(document).ready(() => {
 		updateSet("map", getActiveMapId(), "layer", getCurrentLayerSet());
 		updateLocalStorage("map");
 		$("li.tracker-layer-item input.tracker-layer-status").prop("disabled", false);
+		setMarkers();
 	});
 
 	//Event Handlers on Tab 1(Map) --end
