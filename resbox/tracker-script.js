@@ -10,10 +10,13 @@ let defaultMapOptions = {
 	disableDoubleClickZoom: true,
 	draggable: true
 };
-let initialLayers = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
+let layerIdBegin = 101;
+let layersName = ["Personell", "Signsplan", "Bannerplan"];
+let initialLayerSet = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
 let newMarkerFlag = false;
 let map;
 let activeMap;
+let dataSet = ["map", "layer", "checkpoint"];
 let checkpointSet, layerSet, mapSet;
 let markers = [];
 let markerListener;
@@ -72,6 +75,16 @@ function setTooltip(ele, tooltipText){
 }
 
 //Helper Methods --end
+
+
+//Data Service Methods --start
+
+function fetchData() {
+	
+
+}
+
+//Data Service Methods --end
 
 
 //Materialize Components Methods --start
@@ -255,10 +268,9 @@ function setActiveMap(){
 function setDefaultLayers() {
 	if(typeof(Storage) !== "undefined") {
 		let layers = [];
-		let layersName = ["Personell", "Signsplan", "Bannerplan"];
-		for(let idStarts = 100, i = 0, layer; i < 3; i++) {
+		for(let i = 0, layer; i < layersName.length; i++) {
 			layer = {
-				"id" : idStarts + i + 1,
+				"id" : layerIdBegin + i,
 				"name" : layersName[i]
 			};
 			layers.push(layer);
@@ -311,7 +323,7 @@ function showLayersCheck() {
 
 //Returns current layer settings of the active map
 function getCurrentLayerSet() {
-	let layerList = JSON.parse(JSON.stringify(initialLayers));
+	let layerList = JSON.parse(JSON.stringify(initialLayerSet));
 	$(".tracker-layer-name").each((index, item) => {
 		layerList[index].active = parseInt($(item).attr("data-active"));
 	});
@@ -425,6 +437,7 @@ $(document).ready(() => {
 
 	initMaterialize();
 	setDefaultLayers();
+	fetchData();
 	fetchMaps();
 	initGoogleMap();
 	activatePlaceAutocomplete();
@@ -488,7 +501,7 @@ $(document).ready(() => {
 				"id" : getUID(),
 				"name" : $("#map-title").val(),
 				"center" : map.getCenter(),
-				"layer" : initialLayers,
+				"layer" : initialLayerSet,
 				"draggable" : !$("#tracker-map-lock-position").prop("checked"),
 				"active" : 1,
 				"zoom" : map.getZoom()
