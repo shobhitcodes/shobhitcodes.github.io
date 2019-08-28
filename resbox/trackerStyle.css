@@ -353,3 +353,8 @@ a[href^="https://maps.google.com/maps"] {
 #tracker-noCheckpoint-label {
 	margin-top: 5px;
 }
+
+#tracker-noMaps-label{
+	margin: 5px 0;
+	font-style: oblique;
+}
