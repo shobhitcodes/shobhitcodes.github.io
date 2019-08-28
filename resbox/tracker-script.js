@@ -15,7 +15,6 @@ let layersName = ["Personell", "Signsplan", "Bannerplan"];
 let initialLayerSet = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
 let newMarkerFlag = false;
 let googleMap;
-let activeMap;
 let dataSet = ["map", "layer", "checkpoint"];
 //let checkpointSet, layerSet, mapSet;
 let markers = [];
@@ -111,7 +110,7 @@ const initMaterialize = () => {
 		swipeable: true,
 		onShow: tab => onTabChange(tab)
 	});
-	$('.tooltipped').tooltip();
+	initTooltip($('.tooltipped'));
 }
 
 //To initialize tooltip for passed element
@@ -136,14 +135,15 @@ const onTabChange = tab => {
 
 //Initializes and displays google map 
 const initGoogleMap = () => {
-	googleMap = new google.maps.Map(document.getElementById("mapCanvas"), defaultMapOptions);	
+	googleMap = new google.maps.Map(document.getElementById("mapCanvas"), defaultMapOptions);
+	let activeMap = getActiveMap();
 	if(activeMap !== undefined) {
 		googleMap.setOptions({
 			center: {lat: activeMap.center.lat, lng: activeMap.center.lng},
 			zoom: activeMap.zoom,
 			draggable: activeMap.draggable
 		});
-
+		$("#mapCanvas").removeClass("d-none");
 	}
 }
 
@@ -155,11 +155,7 @@ function activatePlaceAutocomplete() {
 		if (!place.geometry) {
 			return;
 		}
-		if (place.geometry.viewport) {
-			googleMap.fitBounds(place.geometry.viewport);
-		} else {
-			googleMap.setCenter(place.geometry.location); 
-		}
+		place.geometry.viewport ? googleMap.fitBounds(place.geometry.viewport) : googleMap.setCenter(place.geometry.location);
 	});
 }
 
@@ -223,21 +219,17 @@ function setMarkers() {
 
 //Map Service Methods --start
 
-//Maps map data on to the DOM
+//Maps map data on the DOM
 const setMap = () => {
 	let mapList = $("#tracker-map-list");
 	if(map) {
 		mapList.empty();
 		$("#tracker-noMaps-label").addClass("d-none");
-		mapList.removeClass("d-none");
 		map.forEach( item => {
 			mapList.append(addMapItem(item.id, item.name, item.active));
 		});
-		setActiveMap();
+		mapList.removeClass("d-none");
 		$("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').parent().find("input.tracker-map-status").prop("checked", true);
-	} else {
-		$("#tracker-noMaps-label").removeClass("d-none");
-		mapList.addClass("d-none");
 	}
 };
 
@@ -254,7 +246,7 @@ function fetchMaps() {
 				$(mapList).append(addMapItem(item.id, item.name, item.active));
 			});
 			//setActiveMap();
-			$("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').parent().find("input.tracker-map-status").removeAttr("checked").prop("checked", true);
+			$("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').parent().find("input.tracker-map-status").prop("checked", true);
 		} else {
 			$("#tracker-noMaps-label").removeClass("d-none");
 		}
@@ -265,7 +257,7 @@ function fetchMaps() {
 function addMapItem(id, name, active) {
 	return `<li class="tracker-map-item">
 	<div class="switch__container">
-	<span class="tracker-map-name text__wrap" data-id="${id}" data-active="${active}">${name}</span>
+	<span id="${id}" class="tracker-map-name text__wrap" data-active="${active}">${name}</span>
 	<span class="switch">
 	<label>
 	<input class="tracker-map-status" type="checkbox" ${(active === 1) ? "disabled" : ""}>
@@ -279,18 +271,32 @@ function addMapItem(id, name, active) {
 
 //Returns current active map id
 function getActiveMapId() {
-	return $("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').data("id");
+	return $("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').id;
 }
 
-//Sets activeMap
-function setActiveMap(){
-	activeMap = map.find(function(item) { return item.id == getActiveMapId() });
-}
+//Returns active map
+const getActiveMap = () => map ? map.find(item => item.active === 1 ) : undefined;
 
 //Map Service Methods --end
 
 
 //Layer Service Methods --start
+
+//Maps layer data on the DOM
+const setLayer = () => {
+	let activeMap = getActiveMap();
+	if(activeMap !== undefined) {
+		let layerList = "#tracker-layer-list";
+		$(layerList).empty();
+		activeMap.layer.forEach( layer => {
+			$(layerList).append(addLayerItem(layer.id, getLayerName(layer.id), layer.active));
+		});
+		$("li.tracker-layer-item").find('.tracker-layer-name[data-active="1"]').parent().find("input.tracker-layer-status").prop("checked", true);
+		$("#tracker-layers-wrapper").removeClass("d-none");
+	} else {
+		$("#tracker-layers-wrapper").addClass("d-none");
+	}
+};
 
 //Fetches layers from active map and shows on Layer wrapper 
 function fetchLayers() {
@@ -314,10 +320,10 @@ const getLayerName = id => layer[layer.findIndex(x => x.id == id)].name;
 function addLayerItem(id, name, active) {
 	return `<li class="tracker-layer-item">
 	<div class="switch__container">
-	<span class="tracker-layer-name text__wrap" data-id="${id}" data-active="${active}">${name}</span>
+	<span id="${id}" class="tracker-layer-name text__wrap" data-active="${active}">${name}</span>
 	<span class="switch">
 	<label>
-	<input class="tracker-layer-status" type="checkbox" ${(active === 1) ? "checked" : ""}>
+	<input class="tracker-layer-status" type="checkbox">
 	<span class="lever"></span>
 	</label>
 	</span>
@@ -327,9 +333,7 @@ function addLayerItem(id, name, active) {
 }
 
 //Makes Layer wrapper visible if any layer exists
-function showLayersCheck() {
-	$("#tracker-layer-list li").length !== 0 ? $("#tracker-layers-wrapper").removeClass("d-none") : $("#tracker-layers-wrapper").addClass("d-none");	
-}
+const showLayersCheck= () => $("#tracker-layer-list li").length !== 0 ? $("#tracker-layers-wrapper").removeClass("d-none") : $("#tracker-layers-wrapper").addClass("d-none");
 
 //Returns current layer settings of the active map
 function getCurrentLayerSet() {
@@ -340,14 +344,16 @@ function getCurrentLayerSet() {
 	return layerList;
 }
 
+//Returns active map
+// const getActiveMap = () => map ? map.find(function(item) { return item.active === 1 }) : undefined;
+
 //Returns active layers list
-function getActiveLayers() {
+const getActiveLayers = () => {
 	let activeLayers = [];
-	$("li.tracker-layer-item").each( (index,ele) => {
-		if( $(ele).find('.tracker-layer-name').attr("data-active") === "1") {
-			activeLayers.push($(ele).find('.tracker-layer-name').attr("data-id"));
-		}
-	});
+	let activeMap = getActiveMap();
+	if(activeMap !== undefined){
+		activeMap.layer.filter(item => item.active === 1).forEach(item => activeLayers.push(item.id));
+	}
 	return activeLayers;
 }
 
@@ -355,6 +361,24 @@ function getActiveLayers() {
 
 
 //Checkpoint Methods --start
+
+//Maps checkpoint data on the DOM
+const setCheckpoint = () => {
+	let activeMap = getActiveMap();
+	if(activeMap !== undefined) {
+		let cpList = $("#tracker-checkpoint-list");
+		cpList.empty();
+		if(checkpoint){
+			checkpoint.forEach( item => {
+				if(item.map === getActiveMapId() && getActiveLayers().includes(item.type)) {
+					cpList.append(addCheckpointItem(item.id, item.name, item.position));
+				}
+			});
+		}
+	}
+	setCheckpointTally();
+	showNoCheckpointCheck();
+};
 
 //Fetches checkpoints from local storage and shows on checkpoint wrapper 
 function fetchCheckpoints() {
@@ -379,8 +403,9 @@ function fetchCheckpoints() {
 }
 
 //Sets active map layers on checkpoint type selection
-function setCheckpointType() {
+const setCheckpointType = () => {
 	let newOptions = {};
+	let activeMap = getActiveMap();
 	if(activeMap !== undefined) {
 		activeMap.layer.forEach( layer => {
 			if(layer.active === 1) {
@@ -417,10 +442,11 @@ function removeAddCheckpoint() {
 	}
 }
 
+//Makes Layer wrapper visible if any layer exists
+const showNoCheckpointCheck = () => $("li.tracker-checkpoint-item").length !== 0 ? $("#tracker-noCheckpoint-label").removeClass("d-none") : $("#tracker-noCheckpoint-label").addClass("d-none");
+
 //Sets checkpoint tally
-function setCheckpointTally() {
-	$("#checkpoints-tally").text(markers.length);
-}
+const setCheckpointTally = () => $("#checkpoints-tally").text($("li.tracker-checkpoint-item").length);
 
 //Appends checkpoint element to checkpoint wrapper
 function addCheckpointItem(id, title, position) {
@@ -430,7 +456,7 @@ function addCheckpointItem(id, title, position) {
 	<div class="checkpoint-tag"></div>
 	</div>
 	<div class="checkpoint-info-wrapper">
-	<div data-id="${id}" class="checkpoint-name">${title}</div>
+	<div id="${id}" class="checkpoint-name">${title}</div>
 	<div class="checkpoint-coordinates">${position.lat.toFixed(3)} - ${position.lng.toFixed(3)}
 	</div>
 	</div>
@@ -448,26 +474,21 @@ $(document).ready(() => {
 	pushDefaultLayers();
 	fetchData();
 	setMap();
-	//fetchMaps();
 	initGoogleMap();
 	activatePlaceAutocomplete();
-	//fetchLayers();
-	//fetchCheckpoints();
+	setLayer();
+	setCheckpoint();
 
 	//Event Handlers on Tab 1(Map) --start
 
 	//Fires when input for map title on add map wrapper is changed 
-	$("#map-title").change(() => {
-		$("#map-title").val() != "" ? $("#map-add").prop("disabled", false) : $("#map-add").prop("disabled", true);
-	});
+	$("#map-title").change(() => $("#map-title").val() != "" ? $("#map-add").prop("disabled", false) : $("#map-add").prop("disabled", true));
 
 	//Fires when lock position switch on add map wrapper is changed
-	$("#tracker-map-lock-position").change(() => {
-		$("#tracker-map-lock-position").prop("checked") ? googleMap.setOptions({draggable: false}) : googleMap.setOptions({draggable: true});
-	});
+	$("#tracker-map-lock-position").change(() => $("#tracker-map-lock-position").prop("checked") ? googleMap.setOptions({draggable: false}) : googleMap.setOptions({draggable: true}));
 
 	//Fires when an inactive map is switched to active
-	$("#tracker-map-list").on("change", '.tracker-map-item input.tracker-map-status[type="checkbox"]', ((event) => {
+	$("#tracker-map-list").on("change", '.tracker-map-item input.tracker-map-status[type="checkbox"]', ( event => {
 		$(event.target).prop("disabled", true);
 		$("#tracker-layers-wrapper").addClass("d-none");
 		$("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').attr("data-active", 0).parent().find("input.tracker-map-status").prop("checked", false).prop("disabled", false);
@@ -485,7 +506,7 @@ $(document).ready(() => {
 	$("#add-map-btn").click(() => {
 		$("#add-map-btn").addClass("d-none");
 		$("#tracker-map-lock-position").prop("checked") ? googleMap.setOptions({draggable: false}) : googleMap.setOptions({draggable: true});
-		$("#tracker-add-map-wrapper").removeClass("d-none");
+		$("#tracker-add-map-wrapper, #mapCanvas").removeClass("d-none");
 		$("#tracker-layers-wrapper").addClass("d-none");
 		$("#tracker-map-list").addClass("no-pointer-events");
 	});
@@ -494,10 +515,10 @@ $(document).ready(() => {
 	$("#close-addMap-btn").click(() => {
 		$("#add-map-btn").removeClass("d-none");
 		$("#tracker-add-map-wrapper").addClass("d-none");
-		if( activeMap !== undefined) {
-			activeMap.draggable ? googleMap.setOptions({draggable: true}) : googleMap.setOptions({draggable: false});
+		if( getActiveMap() !== undefined) {
+			getActiveMap().draggable ? googleMap.setOptions({draggable: true}) : googleMap.setOptions({draggable: false});
 		} else {
-			googleMap.setOptions({draggable: true});
+			$("#mapCanvas").addClass("d-none");
 		}
 		showLayersCheck();
 		$("#tracker-map-list").removeClass("no-pointer-events");
@@ -516,31 +537,42 @@ $(document).ready(() => {
 				"active" : 1,
 				"zoom" : googleMap.getZoom()
 			};
-			if (checkLocalStorage()) {
-				if(localStorage.getItem("map")) {
-					oldMapSet = JSON.parse(localStorage.getItem("map"));
-					oldMapSet.forEach( item => {
-						item.active = 0;
-						newMapSet.push(item);
-					});
-					newMapSet.push(newMap);
-					localStorage.setItem("map", JSON.stringify(newMapSet));
-				} else {
-					localStorage.setItem("map", JSON.stringify([newMap]));
-				}
+			if(map) {
+				map.forEach( item => item.active = 0);
+				map.push(newMap);
+			} else {
+				map = [newMap];
 			}
+			$("#tracker-noMaps-label").addClass("d-none");
+			$("#tracker-map-list").append(addMapItem(newMap.id, newMap.name, newMap.active));
+			$("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').parent().find("input.tracker-map-status").prop("checked", true);
+			$("#tracker-map-list").removeClass("d-none");
+			// if (checkLocalStorage()) {
+			// 	if(localStorage.getItem("map")) {
+			// 		oldMapSet = JSON.parse(localStorage.getItem("map"));
+			// 		oldMapSet.forEach( item => {
+			// 			item.active = 0;
+			// 			newMapSet.push(item);
+			// 		});
+			// 		newMapSet.push(newMap);
+			// 		localStorage.setItem("map", JSON.stringify(newMapSet));
+			// 	} else {
+			// 		localStorage.setItem("map", JSON.stringify([newMap]));
+			// 	}
+			// }
+			updateLocalStorage(dataSet[0]);
+			$("#add-map-btn").removeClass("d-none");
+			$("#tracker-map-list").removeClass("no-pointer-events");
+			$("#tracker-add-map-wrapper").addClass("d-none");
+			$("#map-title").val("");
+			$("#map-title").blur();
+			$("#map-add").prop("disabled", true);
+			$("#tracker-map-location-search").val("");
+			$("#tracker-map-lock-position").prop("checked", false);
 		}
-		fetchMaps();
-		fetchLayers();
-		fetchCheckpoints();
-		$("#add-map-btn").removeClass("d-none");
-		$("#tracker-map-list").removeClass("no-pointer-events");
-		$("#tracker-add-map-wrapper").addClass("d-none");
-		$("#map-title").val("");
-		$("#map-title").blur();
-		$("#map-add").prop("disabled", true);
-		$("#tracker-map-location-search").val("");
-		$("#tracker-map-lock-position").prop("checked", false);
+		// fetchMaps();
+		// fetchLayers();
+		//fetchCheckpoints();
 	});	
 
 	//Fires when status of any layer changes
@@ -678,7 +710,6 @@ $(document).ready(() => {
 	});
 
 });
-
 
 /*
 //Commented code - To further extend functionalities --start

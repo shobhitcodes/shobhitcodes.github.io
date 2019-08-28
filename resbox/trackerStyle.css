@@ -1,5 +1,6 @@
 .tracker-map, #mapCanvas{
 	height: 100vh;
+	background-color: rgb(229, 227, 223);
 }
 
 body {
