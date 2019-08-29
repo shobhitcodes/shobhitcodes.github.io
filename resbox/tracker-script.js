@@ -48,12 +48,6 @@ function updateSet(key, id, itemKey, value) {
 
 //Updates select options for passed elementSelector with new passed options
 const setSelectOption = (ele, newOptions, selectedOption) => {
-	// if(ele.prop) {
-	// 	var options = ele.prop('options');
-	// }
-	// else {
-	// 	var options = ele.attr('options');
-	// }
 	let options = ele.prop ? ele.prop('options') : ele.attr('options');
 	$('option', ele).remove();
 	$.each(newOptions, (val, text) => {
@@ -351,7 +345,7 @@ function getCurrentLayerSet() {
 const getActiveLayers = () => {
 	let activeLayers = [];
 	let activeMap = getActiveMap();
-	if(activeMap !== undefined){
+	if(activeMap !== undefined) {
 		activeMap.layer.filter(item => item.active === 1).forEach(item => activeLayers.push(item.id));
 	}
 	return activeLayers;
