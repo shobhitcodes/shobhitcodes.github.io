@@ -16,10 +16,10 @@ let initialLayerSet = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"ac
 let newMarkerFlag = false;
 let googleMap;
 let dataSet = ["map", "layer", "checkpoint"];
-//let checkpointSet, layerSet, mapSet;
 let markers = [];
 let markerListener;
 //let activeLayersSet;
+//let checkpointSet, layerSet, mapSet;
 
 //Global variables --end
 
@@ -30,7 +30,16 @@ let markerListener;
 const getUID = () => Math.random().toFixed(10).toString(36).substr(2, 16);
 
 //Checks if local storage exists in broswer
-const checkLocalStorage = () => typeof(Storage) !== "undefined";
+const checkLocalStorage = () => {
+	var check = 'localTest';
+	try {
+		localStorage.setItem(check, check);
+		localStorage.removeItem(check);
+		return true;
+	} catch(e) {
+		return false;
+	}
+};
 
 //Updates global sets
 function updateSet(key, id, itemKey, value) {
@@ -100,11 +109,11 @@ const pushDefaultLayers = () => {
 
 //To initialize Materialize components
 const initMaterialize = () => {
-	// $('#tracker-tabs').tabs({
-	// 	swipeable: true,
-	// 	onShow: tab => onTabChange(tab)
-	// });
-	$('.tabs').tabs();
+	$('#tracker-tabs').tabs({
+		swipeable: true,
+		onShow: tab => onTabChange(tab)
+	});
+	$('#roster-tabs .tabs').tabs();
 	initTooltip($('.tooltipped'));
 }
 
@@ -112,11 +121,11 @@ const initMaterialize = () => {
 const initTooltip = ele => ele.tooltip();
 
 //To initialize select options for passed element
-const initSelect = ele => ele.material_select();
+const initSelect = ele => ele.formSelect();
 
 //Executes on a tab change
 const onTabChange = tab => {
-	if(tab[0].attributes.id.value === "tracker-op-2") {
+	if(tab.id === "tracker-op-2") {
 		setCheckpointType();
 	} else {
 		removeAddCheckpoint();
@@ -130,7 +139,7 @@ const onTabChange = tab => {
 
 //Initializes and displays google map 
 const initGoogleMap = () => {
-	googleMap = new google.maps.Map(document.getElementById("mapCanvas"), defaultMapOptions);
+	googleMap = new google.maps.Map(document.getElementById("map-canvas"), defaultMapOptions);
 	let activeMap = getActiveMap();
 	if(activeMap !== undefined) {
 		googleMap.setOptions({
@@ -138,15 +147,15 @@ const initGoogleMap = () => {
 			zoom: activeMap.zoom,
 			draggable: activeMap.draggable
 		});
-		$("#mapCanvas").removeClass("d-none");
+		$("#map-canvas").removeClass("d-none");
 	}
 }
 
 //Activates Google map navigation by places
-function activatePlaceAutocomplete() {
+const activatePlaceAutocomplete = () => {
 	let autocomplete = new google.maps.places.Autocomplete(document.getElementById('tracker-map-location-search'));
-	autocomplete.addListener('place_changed', function() {
-		var place = autocomplete.getPlace();
+	autocomplete.addListener('place_changed', () => {
+		let place = autocomplete.getPlace();
 		if (!place.geometry) {
 			return;
 		}
@@ -154,25 +163,24 @@ function activatePlaceAutocomplete() {
 	});
 }
 
-
 //Clears all listeners set on google map
 const clearAllListeners = () => google.maps.event.clearListeners(googleMap, 'click');
 
 //Adds marker(checkpoint) on google map at passed location 
-function addMarker(location) {
+const addMarker = location => {
 	let markerId = getUID();
 	let marker = createHTMLMapMarker({
 		latlng: location,
 		map: googleMap,
-		html: `<div data-id="${markerId}" class="checkpoint-gtag white droppable"></div>`,
+		html: `<div id="${markerId}" class="checkpoint-gtag white droppable"></div>`,
 		id: markerId
 	});
 	markers.push(marker);
 }
 
 //Activates marker selection - listens for click on google maps and creates custom marker on the clicked location
-function activateMarkerSelection() {
-	markerListener = googleMap.addListener('click', function(event) {
+const activateMarkerSelection = () => {
+	markerListener = googleMap.addListener('click', event => {
 		removeUnsavedMarker();
 		addMarker(event.latLng);
 		newMarkerFlag = true;
@@ -181,7 +189,7 @@ function activateMarkerSelection() {
 };
 
 //Removes unsaved marker(checkpoint) from google map
-function removeUnsavedMarker() {
+const removeUnsavedMarker = () => {
 	if(newMarkerFlag === true) {
 		markers[markers.length-1].setMap(null);
 		markers.pop();
@@ -413,23 +421,24 @@ const setCheckpointType = () => {
 }
 
 //Controls visibility of checkpoint save button
-function saveCheckpointCheck() {
+const saveCheckpointCheck = () => {
 	$("#cp-title").val() !== "" && $("#cp-type").val() !== null  && newMarkerFlag === true ? $("#cp-add").prop("disabled", false) : $("#cp-add").prop("disabled", true);
 }
 
 //Executes when checkpoint(marker) is added on google map
-function checkpointLocked() {
+const checkpointLocked = () => {
 	$("#tracker-cp-loc").removeClass("loc-blinker").addClass("prismBlue");
 	setTooltip($("#tracker-cp-loc"), "Checkpoint location locked");
 	saveCheckpointCheck();
 }
 
 //Closes checkpoint add process
-function removeAddCheckpoint() {
+const removeAddCheckpoint = () => {
 	if(!$("#add-checkpoint-wrapper").hasClass("d-none")) {
 		$("#add-checkpoint-wrapper, #close-addCp-btn").addClass("d-none");
 		$("#tracker-cp-loc").removeClass("loc-blinker prismBlue");
-		$("#tracker-cp-loc").tooltip("remove");
+		// $("#tracker-cp-loc").tooltip("remove");
+		M.Tooltip.getInstance($("#tracker-cp-loc")).destroy();
 		$("#add-cp-btn").removeClass("d-none");
 		$("#cp-add").prop("disabled", true);
 		clearAllListeners();
@@ -501,7 +510,7 @@ $(document).ready(() => {
 	$("#add-map-btn").click(() => {
 		$("#add-map-btn").addClass("d-none");
 		$("#tracker-map-lock-position").prop("checked") ? googleMap.setOptions({draggable: false}) : googleMap.setOptions({draggable: true});
-		$("#tracker-add-map-wrapper, #mapCanvas").removeClass("d-none");
+		$("#tracker-add-map-wrapper, #map-canvas").removeClass("d-none");
 		$("#tracker-layers-wrapper").addClass("d-none");
 		$("#tracker-map-list").addClass("no-pointer-events");
 	});
@@ -513,7 +522,7 @@ $(document).ready(() => {
 		if( getActiveMap() !== undefined) {
 			getActiveMap().draggable ? googleMap.setOptions({draggable: true}) : googleMap.setOptions({draggable: false});
 		} else {
-			$("#mapCanvas").addClass("d-none");
+			$("#map-canvas").addClass("d-none");
 		}
 		showLayersCheck();
 		$("#tracker-map-list").removeClass("no-pointer-events");
@@ -656,53 +665,53 @@ $(document).ready(() => {
 		return false;
 	});
 
-	$(".tracker-sign-icon").mousedown((event) => {
-		let draggedItem = event.target;
-		let currentDroppable = null; 
-		let shiftX = event.clientX - draggedItem.getBoundingClientRect().left;
-		let shiftY = event.clientY - draggedItem.getBoundingClientRect().top;
-		console.log(draggedItem);
-		draggedItem.style.position = "absolute";
-		draggedItem.style.zIndex = 1000;
-		document.body.append(draggedItem);
-		moveAt(event.pageX, event.pageY);
-		function moveAt(pageX, pageY) {
-			draggedItem.style.left = pageX - shiftX + 'px';
-			draggedItem.style.top = pageY - shiftY + 'px';
-		}
-		function onMouseMove(event) {
-			moveAt(event.pageX, event.pageY);
-			draggedItem.hidden = true;
-			let elemBelow = document.elementFromPoint(event.clientX, event.clientY);
-			draggedItem.hidden = false;
-			if (!elemBelow) return;
-			let droppableBelow = elemBelow.closest('.droppable');
-			if (currentDroppable != droppableBelow) { 
-				if (currentDroppable) {
-					//leaveDroppable(currentDroppable);
-					currentDroppable.style.borderColor = "#ccc"; 
-					currentDroppable.classList.remove("selected");
-				}
-				currentDroppable = droppableBelow;
-				if (currentDroppable) {
-					//enterDroppable(currentDroppable);
-					droppableBelow.style.borderColor = "#00b2ee"; 
-					droppableBelow.classList.add("selected");
-				}
-			}
-		}
-		document.addEventListener('mousemove', onMouseMove);
-		draggedItem.onmouseup = function() {
-			document.removeEventListener('mousemove', onMouseMove);
-			draggedItem.onmouseup = null;
-			$(".checkpoint-gtag").each(() => {
-				if($(this).hasClass("selected")) {
-					console.log("on selected!!");
-				}
-			});
+	// $(".tracker-sign-icon").mousedown((event) => {
+	// 	let draggedItem = event.target;
+	// 	let currentDroppable = null; 
+	// 	let shiftX = event.clientX - draggedItem.getBoundingClientRect().left;
+	// 	let shiftY = event.clientY - draggedItem.getBoundingClientRect().top;
+	// 	console.log(draggedItem);
+	// 	draggedItem.style.position = "absolute";
+	// 	draggedItem.style.zIndex = 1000;
+	// 	document.body.append(draggedItem);
+	// 	moveAt(event.pageX, event.pageY);
+	// 	function moveAt(pageX, pageY) {
+	// 		draggedItem.style.left = pageX - shiftX + 'px';
+	// 		draggedItem.style.top = pageY - shiftY + 'px';
+	// 	}
+	// 	function onMouseMove(event) {
+	// 		moveAt(event.pageX, event.pageY);
+	// 		draggedItem.hidden = true;
+	// 		let elemBelow = document.elementFromPoint(event.clientX, event.clientY);
+	// 		draggedItem.hidden = false;
+	// 		if (!elemBelow) return;
+	// 		let droppableBelow = elemBelow.closest('.droppable');
+	// 		if (currentDroppable != droppableBelow) { 
+	// 			if (currentDroppable) {
+	// 				//leaveDroppable(currentDroppable);
+	// 				currentDroppable.style.borderColor = "#ccc"; 
+	// 				currentDroppable.classList.remove("selected");
+	// 			}
+	// 			currentDroppable = droppableBelow;
+	// 			if (currentDroppable) {
+	// 				//enterDroppable(currentDroppable);
+	// 				droppableBelow.style.borderColor = "#00b2ee"; 
+	// 				droppableBelow.classList.add("selected");
+	// 			}
+	// 		}
+	// 	}
+	// 	document.addEventListener('mousemove', onMouseMove);
+	// 	draggedItem.onmouseup = function() {
+	// 		document.removeEventListener('mousemove', onMouseMove);
+	// 		draggedItem.onmouseup = null;
+	// 		$(".checkpoint-gtag").each(() => {
+	// 			if($(this).hasClass("selected")) {
+	// 				console.log("on selected!!");
+	// 			}
+	// 		});
 
-		};
-	});
+	// 	};
+	// });
 
 });
 
@@ -713,7 +722,7 @@ function toggleMenu(x) {
 	options = { direction:"right"},
 	duration = 250;
 	$(".tracker-map-wrapper").toggle();
-	document.getElementById("tracker-wrap").classList.toggle("super-div");
+	document.getElementById("tracker-wrap").classList.toggle("full-view-width");
 	$('#tracker-wrap').toggle(effect, options, duration);
 	$('ul.tabs').tabs({
 		swipeable: true

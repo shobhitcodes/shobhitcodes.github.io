@@ -28,7 +28,7 @@
 	<div class="main">
 
 		<div id="tracker-component" class="flex-start">
-	
+
 			<!-- Header -->
 			<header>
 				<div class="menu-container" onclick="toggleMenu(this)">
@@ -39,18 +39,22 @@
 				<img src="img/gear/logo.png"/>
 			</header>
 
+			<!-- Map -->
 			<div class="tracker-map-wrapper">
 				<div class="tracker-map">
-					<div id="mapCanvas" class="loadMap d-none"></div>
+					<div id="map-canvas" class="d-none"></div>
 				</div>
 			</div>
+			
+			<!-- Tracker Components -->
+			<div id="tracker-wrap" class="tracker-options-wrapper">
 
-			<div id="tracker-wrap" class="tracker-options-wrapper wrapSS">
-
-				<div class="row title-bar z-depth-2 text-transform-capitalize">
+				<!-- Title Bar -->
+				<div class="title-bar z-depth-2 text-transform-capitalize">
 					tour des fjords
 				</div>
-
+				
+				<!-- Tabs -->
 				<div class="row">
 					<div class="gridTabs-navBar col s12">
 						<ul id="tracker-tabs" class="tabs tabs-fixed-width gridTabs">
@@ -61,20 +65,22 @@
 							<li class="tab gridTab"><a class="clear-padding" href="#tracker-op-5">bannerplan</a></li>
 						</ul>
 					</div>
-
+					
 					<div id="tracker-operations" class="tabs-content-wrapper">
+						<!-- Tab 1: Map -->
 						<div id="tracker-op-1" class="col s12">
+							<!-- Available Maps -->
 							<div class="white__box z-depth-2">
 								<div class="header grey-text">Availebal Maps<i id="add-map-btn" class="material-icons tooltipped small green-text put-pointer no-select" data-position="bottom" data-delay="50" data-tooltip="Add new map">add_box</i></div>
 								<div id="tracker-noMaps-label" class="grey-text d-none">No maps available</div>
 								<ul id="tracker-map-list" class="d-none"></ul>
 							</div>
+							<!-- Add New Map -->
 							<div id="tracker-add-map-wrapper" class="white__box z-depth-2 d-none">
 								<div class="header grey-text">Add New Map<i id="close-addMap-btn" class="material-icons small put-pointer no-select hover-grey">close</i></div>
 								<div class="tracker-map-title-wrapper input-field top-margin-10x">
 									<input id="map-title" type="text" class="validate" maxlength="60">
 									<label for="map-title">Map Name</label>
-									<!-- <div id="map-title-error" class="validate-error go-relative pull-top-20x d-none">This is required</div> -->
 								</div>
 								<div class="tracker-map-location-wrapper input-field clear-margin">
 									<div class="tracker-map-location-search-wrapper flex-start">
@@ -97,15 +103,16 @@
 									<button id="map-add" class="waves-effect waves-light btn clear-margin unset-text bg-prismBlue tracker-btn" disabled><span>Save</span></button>
 								</div>
 							</div>
+							<!-- Available Layers -->
 							<div id="tracker-layers-wrapper" class="white__box z-depth-2 d-none">
 								<div class="header grey-text">Availebal Layers</div>
 								<div id="tracker-noLayers-label" class="d-none">No layers available</div>
 								<ul id="tracker-layer-list"></ul>
 							</div>
-
 						</div>
 
-						<div id="tracker-op-2" class="col s12" style="display:none">
+						<!-- Tab 2: Track -->
+						<div id="tracker-op-2" class="col s12">
 							<div id="add-checkpoint-box" class="white__box z-depth-2">
 								<div id="add-cp-header" class="header grey-text">Add a new checkpoint<i id="add-cp-btn" class="material-icons tooltipped small green-text put-pointer no-select" data-position="bottom" data-delay="50" data-tooltip="Add new checkpoint">add_box</i><i id="tracker-cp-loc" class="material-icons" data-position="bottom" data-delay="50">location_searching</i><i id="close-addCp-btn" class="material-icons small put-pointer no-select hover-grey d-none">close</i></div>
 								<div id="add-checkpoint-wrapper" class="d-none">
@@ -114,7 +121,7 @@
 										<label for="cp-title">Checkpoint Name</label>
 										<!-- <div id="cp-title-error" class="validate-error go-relative pull-top-20x d-none"></div> -->
 									</div>
-									<div class="tracker-cp-type-wrapper input-field">
+									<div class="tracker-cp-type-wrapper input-field top-margin-25x">
 										<select id="cp-type"></select>
 										<label>Checkpoint Type</label>
 									</div>
@@ -130,7 +137,8 @@
 							</div>
 						</div>
 
-						<div id="tracker-op-3" class="col s12" style="display:none">
+						<!-- Tab 3: Rostering -->
+						<div id="tracker-op-3" class="col s12">
 							<div class="white__box z-depth-2 roster-time-container">
 								<div class="roster-schedule-wrapper row">
 									<div class="roster-start col s12 m12 l6 xl6">
@@ -162,8 +170,8 @@
 									<div class="dummy-line"></div>	
 								</div>
 							</div>
-							<div class="row top-margin-10x">
-								<div class="gridTabs-navBar no-pointer-events">
+							<div id="roster-tabs" class="row top-margin-10x">
+								<div class="gridTabs-navBar">
 									<ul class="tabs tabs-fixed-width gridTabs">
 										<li class="tab gridTab"><a class="active clear-padding" href="#course-roster-wrapper">Course (<span id="course-roster-count">23</span>)</a></li>
 										<li class="tab gridTab"><a class="clear-padding" href="#fixed-roster-wrapper">Fixed (<span id="fixed-roster-count">12</span>)</a></li>
@@ -210,7 +218,7 @@
 										</div>	
 									</div>
 
-									<div id="fixed-roster-wrapper" class="col s12" style="display:none">
+									<div id="fixed-roster-wrapper" class="col s12">
 										<div class="personnel-list side-margin-10x">
 											<div class="personnel-box">
 												<div class="personnel-icon">
@@ -233,22 +241,11 @@
 														Section/Role | +4792858015 | richard@mobilise.no |
 													</div>
 												</div>
-											</div>
-											<div class="personnel-box">
-												<div class="personnel-icon">
-													<img class="personnel-tag" src="resbox/images/reporter.jpg">
-												</div>
-												<div class="personnel-info-wrapper">
-													<div class="personnel-name">Ola Nordmann</div>
-													<div class="personnel-details">
-														Section/Role | +4792858015 | richard@mobilise.no |
-													</div>
-												</div>
-											</div>								
+											</div>							
 										</div>	
 									</div>
 
-									<div id="mobile-roster-wrapper" class="col s12" style="display:none">
+									<div id="mobile-roster-wrapper" class="col s12">
 										<div class="personnel-list side-margin-10x">
 											<div class="personnel-box">
 												<div class="personnel-icon">
@@ -289,7 +286,8 @@
 							</div>
 						</div>
 
-						<div id="tracker-op-4" class="col s12" style="display:none">
+						<!-- Tab 4: Signsplan -->
+						<div id="tracker-op-4" class="col s12">
 							<div class="white__box z-depth-2">
 								<div class="search-signs-wrapper">
 									<div class="search-signs-title grey-text">Search for Signs:</div>
@@ -327,7 +325,8 @@
 							</div>
 						</div>
 
-						<div id="tracker-op-5" class="col s12" style="display:none">
+						<!-- Tab 5: Bannerplan -->
+						<div id="tracker-op-5" class="col s12">
 							<div class="white__box z-depth-2">
 								<div class="search-banners-wrapper">
 									<div class="search-banners-title grey-text">Search for Banners:</div>
