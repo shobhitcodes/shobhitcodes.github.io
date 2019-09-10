@@ -255,6 +255,8 @@ const setMap = () => {
 		});
 		mapList.removeClass("d-none");
 		$("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').parent().find("input.tracker-map-status").prop("checked", true);
+	} else {
+		$("#tracker-noMaps-label").removeClass("d-none");
 	}
 };
 
@@ -576,6 +578,7 @@ $(document).ready(() => {
 			mapList.append(addMapItem(newMap.id, newMap.name, newMap.active));
 			$("#" + getActiveMap().id).parent().find("input.tracker-map-status").prop("checked", true);
 			setLayer();
+			setTabs();
 			updateLocalStorage(dataSet[0]);
 			$("#add-map-btn").removeClass("d-none");
 			mapList.removeClass("no-pointer-events");
