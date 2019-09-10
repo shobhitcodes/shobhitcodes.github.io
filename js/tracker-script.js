@@ -12,7 +12,7 @@ let defaultMapOptions = {
 };
 let layerIdBegin = 101;
 let layersName = ["Personell", "Signsplan", "Bannerplan"];
-let initialLayerSet = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
+// let initialLayerSet = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
 let newMarkerFlag = false;
 let googleMap;
 let dataSet = ["map", "layer", "checkpoint"];
@@ -79,9 +79,7 @@ const setTooltip = (ele, tooltipText) => {
 //Fetches data from local storage
 const fetchData = () => {
 	if(checkLocalStorage()) {
-		$.each(dataSet, (key, value) => {
-			window[value] = JSON.parse(localStorage.getItem(value));
-		});
+		$.each(dataSet, (key, value) => window[value] = JSON.parse(localStorage.getItem(value)));
 	}
 }
 
@@ -260,18 +258,18 @@ function fetchMaps() {
 
 //Appends Map element to Map wrapper
 const addMapItem = (id, name, active) => 
-	`<li class="tracker-map-item">
-	<div class="switch__container">
-	<span id="${id}" class="tracker-map-name text__wrap" data-active="${active}">${name}</span>
-	<span class="switch">
-	<label>
-	<input class="tracker-map-status" type="checkbox" ${(active === 1) ? "disabled" : ""}>
-	<span class="lever"></span>
-	</label>
-	</span>
-	</div>					
-	</li>
-	`;
+`<li class="tracker-map-item">
+<div class="switch__container">
+<span id="${id}" class="tracker-map-name text__wrap" data-active="${active}">${name}</span>
+<span class="switch">
+<label>
+<input class="tracker-map-status" type="checkbox" ${(active === 1) ? "disabled" : ""}>
+<span class="lever"></span>
+</label>
+</span>
+</div>					
+</li>
+`;
 
 //Returns current active map id
 // function getActiveMapId() {
@@ -302,6 +300,18 @@ const setLayer = () => {
 	}
 };
 
+//Sets initial layer set
+const setInitialLayer = () => {
+	let layers = [];
+	layersName.forEach((value, index) => {
+		layers.push({
+			"id" : layerIdBegin + index,
+			"active" : 1
+		});
+	});
+	window.initialLayer = layers;
+}
+
 //Fetches layers from active map and shows on Layer wrapper 
 // function fetchLayers() {
 // 	let layerList = "#tracker-layer-list";
@@ -322,25 +332,25 @@ const getLayerName = id => layer[layer.findIndex(x => x.id == id)].name;
 
 //Appends layer element to layer wrapper
 const addLayerItem = (id, name, active) => 
-	`<li class="tracker-layer-item">
-	<div class="switch__container">
-	<span id="${id}" class="tracker-layer-name text__wrap" data-active="${active}">${name}</span>
-	<span class="switch">
-	<label>
-	<input class="tracker-layer-status" type="checkbox">
-	<span class="lever"></span>
-	</label>
-	</span>
-	</div>					
-	</li>
-	`;
+`<li class="tracker-layer-item">
+<div class="switch__container">
+<span id="${id}" class="tracker-layer-name text__wrap" data-active="${active}">${name}</span>
+<span class="switch">
+<label>
+<input class="tracker-layer-status" type="checkbox">
+<span class="lever"></span>
+</label>
+</span>
+</div>					
+</li>
+`;
 
 //Makes Layer wrapper visible if any layer exists
 const showLayersCheck= () => $("#tracker-layer-list li").length !== 0 ? $("#tracker-layers-wrapper").removeClass("d-none") : $("#tracker-layers-wrapper").addClass("d-none");
 
 //Returns current layer settings of the active map
 function getActiveLayerSet() {
-	let layerList = JSON.parse(JSON.stringify(initialLayerSet));
+	let layerList = JSON.parse(JSON.stringify(initialLayer));
 	$(".tracker-layer-name").each((index, item) => {
 		layerList[index].active = parseInt($(item).attr("data-active"));
 	});
@@ -449,19 +459,19 @@ const setCheckpointTally = () => $("#checkpoints-tally").text($("li.tracker-chec
 
 //Appends checkpoint element to the checkpoint wrapper
 const addCheckpointItem = (id, title, position) =>
-	`<li class="tracker-checkpoint-item">
-	<div class="checkpoint-box">
-	<div class="checkpoint-icon">
-	<div class="checkpoint-tag"></div>
-	</div>
-	<div class="checkpoint-info-wrapper">
-	<div id="${id}" class="checkpoint-name">${title}</div>
-	<div class="checkpoint-coordinates">${position.lat.toFixed(3)} - ${position.lng.toFixed(3)}
-	</div>
-	</div>
-	</div>				
-	</li>
-	`;
+`<li class="tracker-checkpoint-item">
+<div class="checkpoint-box">
+<div class="checkpoint-icon">
+<div class="checkpoint-tag"></div>
+</div>
+<div class="checkpoint-info-wrapper">
+<div id="${id}" class="checkpoint-name">${title}</div>
+<div class="checkpoint-coordinates">${position.lat.toFixed(3)} - ${position.lng.toFixed(3)}
+</div>
+</div>
+</div>				
+</li>
+`;
 
 //Checkpoint Methods --end
 
@@ -469,6 +479,7 @@ const addCheckpointItem = (id, title, position) =>
 //Main function(executes when DOM has been loaded) - execution starts here
 $(document).ready(() => {
 	initMaterialize();
+	setInitialLayer();
 	pushDefaultLayers();
 	fetchData();
 	setMap();
@@ -528,8 +539,8 @@ $(document).ready(() => {
 			let newMap = {
 				"id" : getUID(),
 				"name" : $("#map-title").val(),
-				"center" : googleMap.getCenter(),
-				"layer" : initialLayerSet,
+				"center" : googleMap.getCenter().toJSON(),
+				"layer" : initialLayer,
 				"draggable" : !$("#tracker-map-lock-position").prop("checked"),
 				"active" : 1,
 				"zoom" : googleMap.getZoom()

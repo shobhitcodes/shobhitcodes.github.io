@@ -136,6 +136,7 @@ header::after {
 
 .tracker-map {
 	background-color: rgb(229, 227, 223);
+	height: 100vh;
 }
 
 #map-canvas {
