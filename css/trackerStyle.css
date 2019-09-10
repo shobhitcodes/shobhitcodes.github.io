@@ -83,7 +83,7 @@ header {
 	width: 35vw;
 	min-width: 300px;
 	position: absolute;
-	right: 0;
+	left: 65vw;
 }
 
 header::after {
@@ -121,7 +121,9 @@ header::after {
 
 @media only screen and (max-width: 900px) {
 	header {
-		width: 100vw;
+		width: 100%;
+		left: 0;
+		right: 0;
 	}
 	.menu-container {
 		display: inline-block !important;

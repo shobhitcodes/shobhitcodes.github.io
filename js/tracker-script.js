@@ -12,14 +12,14 @@ let defaultMapOptions = {
 };
 let layerIdBegin = 101;
 let layersName = ["Personell", "Signsplan", "Bannerplan"];
-// let initialLayerSet = [{"id":101,"active":1},{"id":102,"active":1},{"id":103,"active":1}];
 let newMarkerFlag = false;
 let googleMap;
 let dataSet = ["map", "layer", "checkpoint"];
 let markers = [];
 let markerListener;
-//let activeLayersSet;
-//let checkpointSet, layerSet, mapSet;
+let tabsEle = "#tracker-tabs";
+let trackEle = "#tracker-op-2";
+let layerEle = {"Personell" : "#tracker-op-3", "Signsplan" : "#tracker-op-4", "Bannerplan" : "#tracker-op-5"};
 
 //Global variables --end
 
@@ -42,34 +42,56 @@ const checkLocalStorage = () => {
 };
 
 //Updates global sets
-function updateSet(key, id, itemKey, value) {
-	let changeSet;
-	if(key === "map") {
-		changeSet = mapSet;
-	}
-	changeItemIndex = changeSet.findIndex(x => x.id == id);
-	if(itemKey === "active") {
-		changeSet.map(x => x.active = 0);
-	}
-	changeSet[changeItemIndex][itemKey] = value;
-	mapSet = changeSet;
-}
+// function updateSet(key, id, itemKey, value) {
+// 	let changeSet;
+// 	if(key === "map") {
+// 		changeSet = mapSet;
+// 	}
+// 	changeItemIndex = changeSet.findIndex(x => x.id == id);
+// 	if(itemKey === "active") {
+// 		changeSet.map(x => x.active = 0);
+// 	}
+// 	changeSet[changeItemIndex][itemKey] = value;
+// 	mapSet = changeSet;
+// }
 
-//Updates select options for passed elementSelector with new passed options
+//Updates select options for passed element with new passed options
 const setSelectOption = (ele, newOptions, selectedOption) => {
 	let options = ele.prop ? ele.prop('options') : ele.attr('options');
 	$('option', ele).remove();
-	$.each(newOptions, (val, text) => {
-		options[options.length] = new Option(text, val);
-	});
+	$.each(newOptions, (val, text) => options[options.length] = new Option(text, val));
 	ele.val(selectedOption);
-}
+};
 
 //Sets and initializes passed element with passed string
 const setTooltip = (ele, tooltipText) => {
 	ele.attr("data-tooltip", tooltipText);
 	initTooltip(ele);
-}
+};
+
+//Updates tab system according to existing map and its layers 
+const setTabs = () => {
+	let activeMap = getActiveMap();
+	if(activeMap !== undefined) {
+		$('a[href="' + trackEle + '"]').parent().removeClass("d-none");
+		$(trackEle).removeClass("d-none");
+		activeMap.layer.forEach(item => {
+			let layerName = getLayerName(item.id);
+			if(item.active) {
+				$('a[href="' + layerEle[layerName] + '"]').parent().removeClass("d-none");
+				$(layerEle[layerName]).removeClass("d-none");
+			} else {
+				$('a[href="' + layerEle[layerName] + '"]').parent().addClass("d-none");
+				$(layerEle[layerName]).addClass("d-none");
+			}
+		});
+		initTabs($(tabsEle), true);
+	} else {
+		$('a[href="' + trackEle + '"]').parent().addClass("d-none");
+		$(trackEle).addClass("d-none");
+		initTabs($(tabsEle));
+	}
+};
 
 //Helper Methods --end
 
@@ -81,7 +103,7 @@ const fetchData = () => {
 	if(checkLocalStorage()) {
 		$.each(dataSet, (key, value) => window[value] = JSON.parse(localStorage.getItem(value)));
 	}
-}
+};
 
 //Sets data on local storage
 const updateLocalStorage = key => localStorage.setItem(key, JSON.stringify(window[key]));
@@ -90,30 +112,30 @@ const updateLocalStorage = key => localStorage.setItem(key, JSON.stringify(windo
 const pushDefaultLayers = () => {
 	if(checkLocalStorage()) {
 		let layers = [];
-		layersName.forEach((value, index) => {
+		layersName.forEach((value, index) => 
 			layers.push({
 				"id" : layerIdBegin + index,
 				"name" : value
-			});
-		});
+			})
+			);
 		localStorage.setItem("layer", JSON.stringify(layers));
 	}
-}
+};
 
 //Data Service Methods --end
 
 
-//Materialize Components Methods --start
+//Materialize Component Methods --start
 
 //To initialize Materialize components
 const initMaterialize = () => {
-	$('#tracker-tabs').tabs({
-		swipeable: true,
-		onShow: tab => onTabChange(tab)
-	});
+	// map ? $('#tracker-tabs').tabs({swipeable: true, onShow: tab => onTabChange(tab)}) : $('#tracker-tabs').tabs();
 	$('#roster-tabs .tabs').tabs();
 	initTooltip($('.tooltipped'));
-}
+};
+
+//To initialize tabs for passed element
+const initTabs = (ele,swipe) => swipe ? ele.tabs({swipeable: true, onShow: tab => onTabChange(tab)}) : ele.tabs();
 
 //To initialize tooltip for passed element
 const initTooltip = ele => ele.tooltip();
@@ -128,12 +150,12 @@ const onTabChange = tab => {
 	} else {
 		removeAddCheckpoint();
 	}
-}
+};
 
-//Materialize Components Methods --end
+//Materialize Component Methods --end
 
 
-//GoogleMap Service Methods --start
+//Google map Service Methods --start
 
 //Initializes and displays google map 
 const initGoogleMap = () => {
@@ -149,7 +171,7 @@ const initGoogleMap = () => {
 		});
 		$("#map-canvas").removeClass("d-none");
 	}
-}
+};
 
 //Activates Google map navigation by places
 const activatePlaceAutocomplete = () => {
@@ -161,7 +183,7 @@ const activatePlaceAutocomplete = () => {
 		}
 		place.geometry.viewport ? googleMap.fitBounds(place.geometry.viewport) : googleMap.setCenter(place.geometry.location);
 	});
-}
+};
 
 //Clears all listeners set on google map
 const clearAllListeners = () => google.maps.event.clearListeners(googleMap, 'click');
@@ -176,7 +198,7 @@ const addMarker = location => {
 		id: markerId
 	});
 	markers.push(marker);
-}
+};
 
 //Activates marker selection - listens for click on google maps and creates custom marker on the clicked location
 const activateMarkerSelection = () => {
@@ -195,9 +217,9 @@ const removeUnsavedMarker = () => {
 		markers.pop();
 		newMarkerFlag = false;
 	}
-}
+};
 
-function setMarkers() {
+const setMarkers = () => {
 	while(markers.length) {
 		markers[markers.length-1].setMap(null);
 		markers.pop();
@@ -215,9 +237,9 @@ function setMarkers() {
 			}
 		}
 	});
-}
+};
 
-//GoogleMap Service Methods --end
+//Google map Service Methods --end
 
 
 //Map Service Methods --start
@@ -237,24 +259,24 @@ const setMap = () => {
 };
 
 //Fetches maps from local storage and shows on Map wrapper 
-function fetchMaps() {
-	let mapList = "#tracker-map-list";
-	$(mapList).empty();
-	if (checkLocalStorage()) {
-		if(localStorage.getItem("map")) {
-			$("#tracker-noMaps-label").addClass("d-none");
-			let maps = JSON.parse(localStorage.getItem("map"));
-			mapSet = maps;
-			mapSet.forEach( item => {
-				$(mapList).append(addMapItem(item.id, item.name, item.active));
-			});
-			//setActiveMap();
-			$("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').parent().find("input.tracker-map-status").prop("checked", true);
-		} else {
-			$("#tracker-noMaps-label").removeClass("d-none");
-		}
-	}
-}
+// function fetchMaps() {
+// 	let mapList = "#tracker-map-list";
+// 	$(mapList).empty();
+// 	if (checkLocalStorage()) {
+// 		if(localStorage.getItem("map")) {
+// 			$("#tracker-noMaps-label").addClass("d-none");
+// 			let maps = JSON.parse(localStorage.getItem("map"));
+// 			mapSet = maps;
+// 			mapSet.forEach( item => {
+// 				$(mapList).append(addMapItem(item.id, item.name, item.active));
+// 			});
+// 			//setActiveMap();
+// 			$("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').parent().find("input.tracker-map-status").prop("checked", true);
+// 		} else {
+// 			$("#tracker-noMaps-label").removeClass("d-none");
+// 		}
+// 	}
+// }
 
 //Appends Map element to Map wrapper
 const addMapItem = (id, name, active) => 
@@ -270,11 +292,6 @@ const addMapItem = (id, name, active) =>
 </div>					
 </li>
 `;
-
-//Returns current active map id
-// function getActiveMapId() {
-// 	return $("li.tracker-map-item").find('.tracker-map-name[data-active="1"]').id;
-// }
 
 //Returns active map
 const getActiveMap = () => map ? map.find(item => item.active === 1 ) : undefined;
@@ -310,7 +327,7 @@ const setInitialLayer = () => {
 		});
 	});
 	window.initialLayer = layers;
-}
+};
 
 //Fetches layers from active map and shows on Layer wrapper 
 // function fetchLayers() {
@@ -478,11 +495,12 @@ const addCheckpointItem = (id, title, position) =>
 
 //Main function(executes when DOM has been loaded) - execution starts here
 $(document).ready(() => {
-	initMaterialize();
 	setInitialLayer();
 	pushDefaultLayers();
 	fetchData();
 	setMap();
+	initMaterialize();
+	setTabs();
 	initGoogleMap();
 	activatePlaceAutocomplete();
 	setLayer();
@@ -507,6 +525,7 @@ $(document).ready(() => {
 		initGoogleMap();
 		setLayer(); 	
 		setCheckpoint();
+		setTabs();
 		updateLocalStorage("map");
 	}));
 
@@ -577,6 +596,7 @@ $(document).ready(() => {
 		$("li.tracker-layer-item input.tracker-layer-status").prop("disabled", true);
 		$(event.target).prop("checked") ? $(event.target).parents("div.switch__container").children(".tracker-layer-name ").attr("data-active", 1) : $(event.target).parents("div.switch__container").children(".tracker-layer-name").attr("data-active", 0);
 		map[map.findIndex(x => x.id == getActiveMap().id)].layer = getActiveLayerSet();
+		setTabs();
 		updateLocalStorage("map");
 		$("li.tracker-layer-item input.tracker-layer-status").prop("disabled", false);
 	});
