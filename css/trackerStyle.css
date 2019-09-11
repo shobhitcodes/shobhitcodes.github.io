@@ -18,6 +18,10 @@
 /***Materialize styles overwrite --ends***/
 
 /***Overwrite Mobilise preset styles --start***/
+*, *:before, *:after {
+	word-break: break-word !important;
+}
+
 #tracker-component .title-bar {
 	display: flex;
 	align-items: center;
@@ -25,6 +29,7 @@
 	margin-top: 0;
 	padding: 0;
 	line-height: initial;
+	position: initial;
 }
 
 #tracker-component {
@@ -42,6 +47,22 @@
 
 #tracker-wrap .tooltipped {
 	line-height: initial;
+}
+
+#tracker-wrap .switch__container {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+#tracker-wrap .switch__container .switch {
+	top: -2px;
+	position: relative;
+}
+
+#tracker-wrap .switch__container i {
+	float: initial;
+	margin-left: initial;
 }
 /***Overwrite Mobilise preset styles --end***/
 
@@ -176,6 +197,23 @@ a[href^="https://maps.google.com/maps"] {
 }
 /***Map styles --end***/
 
+/***Icon/Button styles --start***/
+.map-edit-icon {
+	position: absolute;
+	font-size: 20px;
+	color: #707070 !important;
+	outline: auto;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+#map-delete-btn {
+	right: 30px;
+	font-size: 27px;
+	line-height: 32px;
+}
+/***Icon/Button styles --end***/
+
 /***Tracker Component styles --start***/
 #tracker-wrap {
 	width: 35vw;
@@ -185,6 +223,10 @@ a[href^="https://maps.google.com/maps"] {
 
 #tracker-wrap .header {
 	padding-bottom: 5px;
+}
+
+.tracker-map-name {
+	margin-left: 27px;
 }
 
 #tracker-noMaps-label {

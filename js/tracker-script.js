@@ -13,6 +13,7 @@ let defaultMapOptions = {
 let layerIdBegin = 101;
 let layersName = ["Personell", "Signsplan", "Bannerplan"];
 let newMarkerFlag = false;
+let mapEditFlag = false;
 let googleMap;
 let dataSet = ["map", "layer", "checkpoint"];
 let markers = [];
@@ -284,6 +285,7 @@ const setMap = () => {
 const addMapItem = (id, name, active) => 
 `<li class="tracker-map-item">
 <div class="switch__container">
+<i class="material-icons map-edit-icon">edit</i>
 <span id="${id}" class="tracker-map-name text__wrap" data-active="${active}">${name}</span>
 <span class="switch">
 <label>
@@ -533,24 +535,53 @@ $(document).ready(() => {
 
 	//Shows add map wrapper 
 	$("#add-map-btn").click(() => {
-		$("#add-map-btn, #tracker-layers-wrapper").addClass("d-none");
+		$("#tracker-all-map-wrapper, #tracker-layers-wrapper").addClass("d-none");
 		$("#tracker-map-lock-position").prop("checked") ? googleMap.setOptions({draggable: false}) : googleMap.setOptions({draggable: true});
 		$("#tracker-add-map-wrapper, #map-canvas").removeClass("d-none");
-		$("#tracker-map-list").addClass("no-pointer-events");
+		// $("#tracker-map-list").addClass("no-pointer-events");
 	});
+
+	//Shows edit map wrapper 
+	$("#tracker-map-list").on("click", '.tracker-map-item .map-edit-icon', ( event => {
+		$(event.target).parent().find("input.tracker-map-status").click();
+		mapEditFlag = true;
+		let activeMap = getActiveMap();
+		$("#tracker-all-map-wrapper, #tracker-layers-wrapper").addClass("d-none");
+		$("#map-header-title-face").text("Edit");
+		$("#map-title").val(activeMap.name);
+		M.updateTextFields();
+		$("#map-add").prop("disabled", false);
+		$("#tracker-map-lock-position").prop("checked", !getActiveMap().draggable);
+		$("#map-delete-btn, #tracker-add-map-wrapper").removeClass("d-none");		
+	}));
 
 	//Hides add map wrapper 
 	$("#close-addMap-btn").click(() => {
-		$("#add-map-btn").removeClass("d-none");
+		// $("#add-map-btn").removeClass("d-none");
 		$("#tracker-add-map-wrapper").addClass("d-none");
+		$("#tracker-all-map-wrapper").removeClass("d-none");
+		if(mapEditFlag) {
+			$("#map-header-title-face").text("Add");
+			$("#map-title").val("");
+			$("#map-title").blur();
+			$("#map-add").prop("disabled", true);
+			$("#tracker-map-location-search").val("");
+			$("#tracker-map-lock-position").prop("checked", false);
+			mapEditFlag = !mapEditFlag;
+		}
 		if( getActiveMap() !== undefined) {
 			getActiveMap().draggable ? googleMap.setOptions({draggable: true}) : googleMap.setOptions({draggable: false});
 		} else {
 			$("#map-canvas").addClass("d-none");
 		}
 		showLayersCheck();
-		$("#tracker-map-list").removeClass("no-pointer-events");
+		// $("#tracker-map-list").removeClass("no-pointer-events");
 	});
+
+	//Shows edit map wrapper 
+	$("#tracker-component").on("click", '#map-delete-btn', ( event => {
+
+	}));
 
 	//Fires when a new map is added
 	$("#map-add").click(() => {
@@ -580,9 +611,10 @@ $(document).ready(() => {
 			setLayer();
 			setTabs();
 			updateLocalStorage(dataSet[0]);
-			$("#add-map-btn").removeClass("d-none");
-			mapList.removeClass("no-pointer-events");
+			// $("#add-map-btn").removeClass("d-none");
+			// mapList.removeClass("no-pointer-events");
 			$("#tracker-add-map-wrapper").addClass("d-none");
+			$("#tracker-all-map-wrapper").removeClass("d-none");
 			$("#map-title").val("");
 			$("#map-title").blur();
 			$("#map-add").prop("disabled", true);

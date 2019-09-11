@@ -69,15 +69,13 @@
 					<div id="tracker-operations" class="tabs-content-wrapper">
 						<!-- Tab 1: Map -->
 						<div id="tracker-op-1" class="col s12">
-							<!-- Available Maps -->
-							<div class="white__box z-depth-2">
-								<div class="header grey-text">Availebal Maps<i id="add-map-btn" class="material-icons tooltipped small green-text put-pointer no-select" data-position="bottom" data-delay="50" data-tooltip="Add new map">add_box</i></div>
-								<div id="tracker-noMaps-label" class="grey-text d-none">No maps available</div>
-								<ul id="tracker-map-list" class="d-none"></ul>
-							</div>
-							<!-- Add New Map -->
+							<!-- Add/Edit Map -->
 							<div id="tracker-add-map-wrapper" class="white__box z-depth-2 d-none">
-								<div class="header grey-text">Add New Map<i id="close-addMap-btn" class="material-icons small put-pointer no-select hover-grey">close</i></div>
+								<div class="header grey-text">
+									<span id="map-header-title"><span id="map-header-title-face">Add</span> Map</span>
+									<i id="map-delete-btn" class="material-icons put-pointer no-select hover-grey d-none">delete</i>
+									<i id="close-addMap-btn" class="material-icons small put-pointer no-select hover-grey">close</i>
+								</div>
 								<div class="tracker-map-title-wrapper input-field top-margin-10x">
 									<input id="map-title" type="text" class="validate" maxlength="60">
 									<label for="map-title">Map Name</label>
@@ -102,6 +100,12 @@
 								<div class="tracker-map-add-wrapper top-margin-10x flex-end">
 									<button id="map-add" class="waves-effect waves-light btn clear-margin unset-text bg-prismBlue tracker-btn" disabled><span>Save</span></button>
 								</div>
+							</div>
+							<!-- Available Maps -->
+							<div id="tracker-all-map-wrapper" class="white__box z-depth-2">
+								<div class="header grey-text">Availebal Maps<i id="add-map-btn" class="material-icons tooltipped small green-text put-pointer no-select" data-position="bottom" data-delay="50" data-tooltip="Add map">add_box</i></div>
+								<div id="tracker-noMaps-label" class="grey-text d-none">No maps available</div>
+								<ul id="tracker-map-list" class="d-none"></ul>
 							</div>
 							<!-- Available Layers -->
 							<div id="tracker-layers-wrapper" class="white__box z-depth-2 d-none">
