@@ -730,56 +730,55 @@ $(document).ready(() => {
 		return false;
 	});
 
-	// $(".tracker-sign-icon").mousedown((event) => {
-	// 	let draggedItem = event.target;
-	// 	let currentDroppable = null; 
-	// 	let shiftX = event.clientX - draggedItem.getBoundingClientRect().left;
-	// 	let shiftY = event.clientY - draggedItem.getBoundingClientRect().top;
-	// 	console.log(draggedItem);
-	// 	draggedItem.style.position = "absolute";
-	// 	draggedItem.style.zIndex = 1000;
-	// 	document.body.append(draggedItem);
-	// 	moveAt(event.pageX, event.pageY);
-	// 	function moveAt(pageX, pageY) {
-	// 		draggedItem.style.left = pageX - shiftX + 'px';
-	// 		draggedItem.style.top = pageY - shiftY + 'px';
-	// 	}
-	// 	function onMouseMove(event) {
-	// 		moveAt(event.pageX, event.pageY);
-	// 		draggedItem.hidden = true;
-	// 		let elemBelow = document.elementFromPoint(event.clientX, event.clientY);
-	// 		draggedItem.hidden = false;
-	// 		if (!elemBelow) return;
-	// 		let droppableBelow = elemBelow.closest('.droppable');
-	// 		if (currentDroppable != droppableBelow) { 
-	// 			if (currentDroppable) {
-	// 				//leaveDroppable(currentDroppable);
-	// 				currentDroppable.style.borderColor = "#ccc"; 
-	// 				currentDroppable.classList.remove("selected");
-	// 			}
-	// 			currentDroppable = droppableBelow;
-	// 			if (currentDroppable) {
-	// 				//enterDroppable(currentDroppable);
-	// 				droppableBelow.style.borderColor = "#00b2ee"; 
-	// 				droppableBelow.classList.add("selected");
-	// 			}
-	// 		}
-	// 	}
-	// 	document.addEventListener('mousemove', onMouseMove);
-	// 	draggedItem.onmouseup = function() {
-	// 		document.removeEventListener('mousemove', onMouseMove);
-	// 		draggedItem.onmouseup = null;
-	// 		$(".checkpoint-gtag").each(() => {
-	// 			if($(this).hasClass("selected")) {
-	// 				console.log("on selected!!");
-	// 			}
-	// 		});
+	$(".tracker-sign-icon").mousedown((event) => {
+		let draggedItem = event.target;
+		let currentDroppable = null; 
+		let shiftX = event.clientX - draggedItem.getBoundingClientRect().left;
+		let shiftY = event.clientY - draggedItem.getBoundingClientRect().top;
+		console.log(draggedItem);
+		draggedItem.style.position = "absolute";
+		draggedItem.style.zIndex = 1000;
+		document.body.append(draggedItem);
+		moveAt(event.pageX, event.pageY);
+		function moveAt(pageX, pageY) {
+			draggedItem.style.left = pageX - shiftX + 'px';
+			draggedItem.style.top = pageY - shiftY + 'px';
+		}
+		function onMouseMove(event) {
+			moveAt(event.pageX, event.pageY);
+			draggedItem.hidden = true;
+			let elemBelow = document.elementFromPoint(event.clientX, event.clientY);
+			draggedItem.hidden = false;
+			if (!elemBelow) return;
+			let droppableBelow = elemBelow.closest('.droppable');
+			if (currentDroppable != droppableBelow) { 
+				if (currentDroppable) {
+					//leaveDroppable(currentDroppable);
+					currentDroppable.style.borderColor = "#ccc"; 
+					currentDroppable.classList.remove("selected");
+				}
+				currentDroppable = droppableBelow;
+				if (currentDroppable) {
+					//enterDroppable(currentDroppable);
+					droppableBelow.style.borderColor = "#00b2ee"; 
+					droppableBelow.classList.add("selected");
+				}
+			}
+		}
+		document.addEventListener('mousemove', onMouseMove);
+		draggedItem.onmouseup = function() {
+			document.removeEventListener('mousemove', onMouseMove);
+			draggedItem.onmouseup = null;
+			$(".checkpoint-gtag").each(() => {
+				if($(this).hasClass("selected")) {
+					console.log("on selected!!");
+				}
+			});
 
-	// 	};
-	// });
+		};
+	});
 
 });
-
 
 function toggleMenu(x) {
 	x.classList.toggle("menu-change");
