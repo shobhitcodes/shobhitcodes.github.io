@@ -580,7 +580,25 @@ $(document).ready(() => {
 
 	//Shows edit map wrapper 
 	$("#tracker-component").on("click", '#map-delete-btn', ( event => {
-
+		$("#tracker-add-map-wrapper").addClass("d-none");
+		$("#tracker-all-map-wrapper").removeClass("d-none");
+		if(mapEditFlag) {
+			$("#map-header-title-face").text("Add");
+			$("#map-title").val("");
+			$("#map-title").blur();
+			$("#map-add").prop("disabled", true);
+			$("#tracker-map-location-search").val("");
+			$("#tracker-map-lock-position").prop("checked", false);
+			mapEditFlag = !mapEditFlag;
+		}
+		if( getActiveMap() !== undefined) {
+			getActiveMap().draggable ? googleMap.setOptions({draggable: true}) : googleMap.setOptions({draggable: false});
+		} else {
+			$("#map-canvas").addClass("d-none");
+		}
+		showLayersCheck();
+		map.splice(map.findIndex(x => x.id == getActiveMap().id), 1);
+		updateLocalStorage("map");
 	}));
 
 	//Fires when a new map is added

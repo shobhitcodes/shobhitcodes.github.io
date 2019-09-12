@@ -229,6 +229,10 @@ a[href^="https://maps.google.com/maps"] {
 	margin-left: 27px;
 }
 
+.tracker-map-title-wrapper {
+	margin-bottom: 0px;
+}
+
 #tracker-noMaps-label {
 	margin: 5px 0;
 	font-style: oblique;
